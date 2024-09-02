@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Roon Web Controller - McIntosh MA352</title>
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-status-bar-style" content="black" />
+    <meta name="format-detection" content="telephone=no" />
+    <link rel="apple-touch-icon" href="/favicons/apple-icon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script>
+        (function (a, b, c) {
+            if (c in b && b[c]) {
+                var d,
+                    e = a.location,
+                    f = /^(a|html)$/i;
+                a.addEventListener(
+                    "click",
+                    function (a) {
+                        d = a.target;
+                        while (!f.test(d.nodeName)) d = d.parentNode;
+                        "href" in d &&
+                            (d.href.indexOf("http") || ~d.href.indexOf(e.host)) &&
+                            (a.preventDefault(), (e.href = d.href));
+                    },
+                    !1
+                );
+            }
+        })(document, window.navigator, "standalone");
+    </script>
+    <link rel="shortcut icon" href="/favicons/favicon.ico" type="image/x-icon" />
+    <link rel="icon" href="/favicons/favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" type="text/css" href="/css/site.css" />
+    <link rel="stylesheet" type="text/css" href="/css/ma352.css" />
+    <script src="/jquery/jquery.min.js"></script>
+    <script src="/js/jquery.simplemarquee.js"></script>
+    <script src="/js/color-thief.js"></script>
+    <script src="/js-cookie/js.cookie.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/ma352.js"></script>
+    <script>
+        $(window).on("orientationchange", function (event) {
+            // fixFontSize();
+        });
+
+        $(window).resize(function () {
+            // fixFontSize();
+        });
+    </script>
+</head>
+
+<body>
+    <div id="coverBackground"></div>
+    <!-- <div id="colorBackground"></div> -->
+    <div id="notConnecting" class="overlay">
+        <div class="messages">
+            <p>McIntosh Not Connected.</p>
+        </div>
+    </div>
+    <div id="isConnecting" class="overlay">
+        <div id="deviceInfo" class="deviceInfo">
+            <div id="deviceName" class="deviceInfoItem">McIntosh XX</div>
+            <div id="deviceSerial" class="deviceInfoItem">Serial Number: XXXX</div>
+            <div id="deviceVersion" class="deviceInfoItem">FW Version: X.XX</div>
+        </div>
+        <div id="deviceStatus" class="deviceStatus">
+            <!-- <div id="devicePower" class="deviceStatusItem">
+                <div class="deviceStatusItemLabel">POWER</div>
+                <div class="deviceStatusItemValues">
+                    <div class="deviceStatusItemValue">On</div>
+                    <div class="deviceStatusItemValue">Off</div>
+                </div>
+            </div> -->
+            <div id="deviceInput" class="deviceStatusItem">
+                <div class="deviceStatusItemLabel">INPUTS</div>
+                <div id="inputDevicesList" class="deviceStatusItemValues">
+                    <button type="button" class="buttonFillHeight devicesButton" id="buttonInputDevice1">
+                        <div class="inputDeviceSvg"><span id="inputDeviceSvgSpan1"></span></div>
+                        <div class="inputDeviceName"><span id="inputDeviceNameSpan1"></span></div>
+                        <div class="inputDeviceStatus"><span id="inputDeviceStatusSpan1"></span></div>
+                    </button>
+                    <button type="button" class="buttonFillHeight devicesButton" id="buttonInputDevice2">
+                        <div class="inputDeviceSvg"><span id="inputDeviceSvgSpan2"></span></div>
+                        <div class="inputDeviceName"><span id="inputDeviceNameSpan2"></span></div>
+                        <div class="inputDeviceStatus"><span id="inputDeviceStatusSpan2"></span></div>
+                    </button>
+                    <button type="button" class="buttonFillHeight devicesButton" id="buttonInputDevice3">
+                        <div class="inputDeviceSvg"><span id="inputDeviceSvgSpan3"></span></div>
+                        <div class="inputDeviceName"><span id="inputDeviceNameSpan3"></span></div>
+                        <div class="inputDeviceStatus"><span id="inputDeviceStatusSpan3"></span></div>
+                    </button>
+                    <button type="button" class="buttonFillHeight devicesButton" id="buttonInputDevice4">
+                        <div class="inputDeviceSvg"><span id="inputDeviceSvgSpan4"></span></div>
+                        <div class="inputDeviceName"><span id="inputDeviceNameSpan4"></span></div>
+                        <div class="inputDeviceStatus"><span id="inputDeviceStatusSpan4"></span></div>
+                    </button>
+                    <button type="button" class="buttonFillHeight devicesButton" id="buttonInputDevice5">
+                        <div class="inputDeviceSvg"><span id="inputDeviceSvgSpan5"></span></div>
+                        <div class="inputDeviceName"><span id="inputDeviceNameSpan5"></span></div>
+                        <div class="inputDeviceStatus"><span id="inputDeviceStatusSpan5"></span></div>
+                    </button>
+                    <button type="button" class="buttonFillHeight devicesButton" id="buttonInputDevice6">
+                        <div class="inputDeviceSvg"><span id="inputDeviceSvgSpan6"></span></div>
+                        <div class="inputDeviceName"><span id="inputDeviceNameSpan6"></span></div>
+                        <div class="inputDeviceStatus"><span id="inputDeviceStatusSpan6"></span></div>
+                    </button>
+                </div>
+            </div>
+            <div id="deviceVolume" class="deviceStatusItem">
+                <div class="deviceStatusItemLabel">VOLUME</div>
+                <div class="deviceStatusItemValues valumeControlAll">
+                    <div class="deviceStatusItemValue">
+                        <span id="volumeValueSpan">80</span>
+                    </div>
+                    <div class="deviceStatusItemValue valumeControl">
+                        <div class="volumeGroup">
+                            <button type="button" class="buttonFillHeight volumeButton"
+                                onclick="volumeButtonDown('volumeValueSpan')" name="Volume down"
+                                aria-label="Volume down">
+                                <svg viewBox="0 0 24.00 24.00">
+                                    <path
+                                        d="M 3,9.00002L 6.99998,9.00004L 12,4.00002L 12,20L 6.99998,15L 2.99998,15L 3,9.00002 Z M 14,11L 22,11L 22,13L 14,13L 14,11 Z ">
+                                    </path>
+                                </svg>
+                            </button>
+                            <div class="volumeSlider">
+                                <input id="volumeSliderInput" type="range" min="0" max="100" step="1" value="30"
+                                    oninput="volumeInput('volumeValueSpan', this.value)"
+                                    onchange="volumeChange('volumeValueSpan', this.value)">
+                            </div>
+                            <button type="button" class="buttonFillHeight volumeButton"
+                                onclick="volumeButtonUp('volumeValueSpan')" name="Volume up" aria-label="Volume up">
+                                <svg viewBox="0 0 24.00 24.00">
+                                    <path
+                                        d="M 3,9.00002L 6.99998,9.00004L 12,4.00002L 12,20L 6.99998,15L 2.99998,15L 3,9.00002 Z M 14,11L 17,11L 17,8L 19,8L 19,11L 22,11L 22,13L 19,13L 19,16L 17,16L 17,13L 14,13L 14,11 Z ">
+                                    </path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="controlsSettings">
+                <button type="button" class="buttonFillHeight settingsButton" id="buttonPower"></button>
+                <button type="button" class="buttonFillHeight settingsButton" id="buttonMute"></button>
+                <button type="button" class="buttonFillHeight settingsButton" id="buttonEqualizer"></button>
+                <button type="button" class="buttonFillHeight settingsButton" id="buttonGauge"></button>
+                <button type="button" class="buttonFillHeight settingsButton" id="buttonTube"></button>
+                <button type="button" class="buttonFillHeight settingsButton" id="buttonStereo"></button>
+            </div>
+        </div>
+    </div>
+    <div id="overlayPowerMenu" class="overlay">
+        <div class="overlayBackground" onclick="$('#overlayPowerMenu').hide()"></div>
+        <div class="overlayContent">
+            <div class="overlayList">
+                <button id="overlayPowerButton" type="button" class="buttonOverlay" name="Power On"
+                    aria-label="Power On">
+                    Power On
+                </button>
+                <button type="button" class="buttonOverlay" onclick="$('#overlayPowerMenu').hide()" name=""
+                    aria-label="">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

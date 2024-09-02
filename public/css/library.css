@@ -34,8 +34,13 @@
     display: none;
 }
 
+#items {
+    padding-bottom: 0.5em;
+}
+
 .itemListItem {
-    background-color: #4d4d4d;
+    /* background-color: #4d4d4d; */
+    background-color: rgba(77, 77, 77, 0.5);
     fill-opacity: 1;
     color: #eff0f1;
     min-height: 48px;
@@ -45,6 +50,9 @@
     margin-bottom: 10px;
     font-weight: bold;
     text-align: left;
+    display: flex;
+    align-items: center; /* Vertically centers the content */
+    justify-content: flex-start; /* Horizontally centers the content (optional) */
 }
 
 .itemListItem:active {
@@ -57,6 +65,7 @@
     background-color: #4d4d4d;
     fill-opacity: 1;
     color: #eff0f1;
+    border-radius: 0 8px 8px 0;
 }
 
 .itemListButton:active {
@@ -74,26 +83,60 @@
     filter: drop-shadow(5px 5px 5px black);
 }
 
+.itemInfoImage {
+    border-radius: 4px;
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    margin: 2px 10px 2px 2px;
+    float: left;
+    /* flex: auto; */
+    filter: drop-shadow(2px 2px 2px black);
+}
+
+.itemInfoTitle {
+    font-size: 150%;
+}
+
+.itemInfoSubTitle {
+    font-size: 90%;
+}
+
 .searchGroup {
-    height: 28px;
+    height: 48px;
     width: 100%;
     -webkit-filter: drop-shadow(5px 5px 5px black);
     filter: drop-shadow(5px 5px 5px black);
-    margin-bottom: 10px;
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
     align-items: center;
     vertical-align: middle;
     justify-content: center;
+    margin-bottom: 2%;
 }
 
-.searchForm {
+/* .searchForm {
     height: 100%;
     width: 80%;
     border: 0;
     padding: 0;
     font-size: 24px;
+} */
+
+.searchForm {
+    height: 100%;
+    width: 80%;
+    border: 0;
+    padding: 20px 10px 20px 10px; /* Adds padding inside the input */
+    font-size: 1em;
+    border-radius: 8px 0 0 8px; /* Adds rounded corners */
+    outline: none; /* Removes default outline */
+    transition: box-shadow 0.3s ease; /* Smooth transition for the shadow */
+}
+
+.searchForm:focus {
+    box-shadow: 0 0 8px rgba(0, 123, 255, 0.8); /* Outer glow shadow when focused */
 }
 
 #navLine1 {
@@ -147,4 +190,25 @@
     right: 0;
     bottom: 2px;
     height: 40px;
+}
+
+#listTitle {
+    font-size: 300%;
+    font-weight: bold;
+}
+
+#listSubTitle {
+    font-size: 150%;
+}
+
+/* 竖屏布局 */
+@media screen and (max-width: 767px) {
+    #listTitle {
+        font-size: 160%;
+        font-weight: bold;
+    }
+    
+    #listSubTitle {
+        font-size: 100%;
+    }    
 }
