@@ -29,17 +29,17 @@ Otherwise, on the Node.js server:
 
 ### Playing Browser - Screen
 ![Playing](https://raw.githubusercontent.com/dannyzhu/roon-web-controller/ec47e4da4f69a8bfa422643050752e9dd6885e98/demo/demo_play_w_08.png)
-![Playing](https://raw.githubusercontent.com/dannyzhu/roon-web-controller/ec47e4da4f69a8bfa422643050752e9dd6885e98/demo/demo_play_h_02.png)
+<img src="https://raw.githubusercontent.com/dannyzhu/roon-web-controller/ec47e4da4f69a8bfa422643050752e9dd6885e98/demo/demo_play_h_02.png" width="50%" />
 
 ### McIntosh Device Control - Screen
-![McIntosh Device Control](https://raw.githubusercontent.com/dannyzhu/roon-web-controller/ec47e4da4f69a8bfa422643050752e9dd6885e98/demo/demo_device_h_01.png)
+<img src="https://raw.githubusercontent.com/dannyzhu/roon-web-controller/ec47e4da4f69a8bfa422643050752e9dd6885e98/demo/demo_device_h_01.png" width="50%" />
 ![McIntosh Device Control](https://raw.githubusercontent.com/dannyzhu/roon-web-controller/ec47e4da4f69a8bfa422643050752e9dd6885e98/demo/demo_device_w_07.png)
 
 ### Library Browser - Screen
-![Library](https://raw.githubusercontent.com/dannyzhu/roon-web-controller/ec47e4da4f69a8bfa422643050752e9dd6885e98/demo/demo_library_h_03.png)
-![Library](https://raw.githubusercontent.com/dannyzhu/roon-web-controller/ec47e4da4f69a8bfa422643050752e9dd6885e98/demo/demo_library_h_04.png)
-![Library](https://raw.githubusercontent.com/dannyzhu/roon-web-controller/ec47e4da4f69a8bfa422643050752e9dd6885e98/demo/demo_library_h_05.png)
-![Library](https://raw.githubusercontent.com/dannyzhu/roon-web-controller/ec47e4da4f69a8bfa422643050752e9dd6885e98/demo/demo_library_h_06.png)
+<img src="https://raw.githubusercontent.com/dannyzhu/roon-web-controller/ec47e4da4f69a8bfa422643050752e9dd6885e98/demo/demo_library_h_03.png" width="50%" />
+<img src="https://raw.githubusercontent.com/dannyzhu/roon-web-controller/ec47e4da4f69a8bfa422643050752e9dd6885e98/demo/demo_library_h_04.png" width="50%" />
+<img src="https://raw.githubusercontent.com/dannyzhu/roon-web-controller/ec47e4da4f69a8bfa422643050752e9dd6885e98/demo/demo_library_h_05.png" width="50%" />
+<img src="https://raw.githubusercontent.com/dannyzhu/roon-web-controller/ec47e4da4f69a8bfa422643050752e9dd6885e98/demo/demo_library_h_06.png" width="50%" />
 
 ### Dark Theme
 
