@@ -28,12 +28,12 @@ Otherwise, on the Node.js server:
 ## Screenshots
 
 ### Playing Browser - Screen
-![Playing](https://raw.githubusercontent.com/dannyzhu/roon-web-controller/ec47e4da4f69a8bfa422643050752e9dd6885e98/demo/demo_play_w_08.png)
+<img src="https://raw.githubusercontent.com/dannyzhu/roon-web-controller/ec47e4da4f69a8bfa422643050752e9dd6885e98/demo/demo_play_w_08.png" />
 <img src="https://raw.githubusercontent.com/dannyzhu/roon-web-controller/ec47e4da4f69a8bfa422643050752e9dd6885e98/demo/demo_play_h_02.png" width="50%" />
 
 ### McIntosh Device Control - Screen
 <img src="https://raw.githubusercontent.com/dannyzhu/roon-web-controller/ec47e4da4f69a8bfa422643050752e9dd6885e98/demo/demo_device_h_01.png" width="50%" />
-![McIntosh Device Control](https://raw.githubusercontent.com/dannyzhu/roon-web-controller/ec47e4da4f69a8bfa422643050752e9dd6885e98/demo/demo_device_w_07.png)
+<img src="https://raw.githubusercontent.com/dannyzhu/roon-web-controller/ec47e4da4f69a8bfa422643050752e9dd6885e98/demo/demo_device_w_07.png" />
 
 ### Library Browser - Screen
 <img src="https://raw.githubusercontent.com/dannyzhu/roon-web-controller/ec47e4da4f69a8bfa422643050752e9dd6885e98/demo/demo_library_h_03.png" width="50%" />
