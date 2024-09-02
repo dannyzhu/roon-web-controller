@@ -27,6 +27,20 @@ Otherwise, on the Node.js server:
 
 ## Screenshots
 
+### Playing Browser - Screen
+![Playing](https://raw.githubusercontent.com/dannyzhu/roon-web-controller/ec47e4da4f69a8bfa422643050752e9dd6885e98/demo/demo_play_w_08.png)
+![Playing](https://raw.githubusercontent.com/dannyzhu/roon-web-controller/ec47e4da4f69a8bfa422643050752e9dd6885e98/demo/demo_play_h_02.png)
+
+### McIntosh Device Control - Screen
+![McIntosh Device Control](https://raw.githubusercontent.com/dannyzhu/roon-web-controller/ec47e4da4f69a8bfa422643050752e9dd6885e98/demo/demo_device_h_01.png)
+![McIntosh Device Control](https://raw.githubusercontent.com/dannyzhu/roon-web-controller/ec47e4da4f69a8bfa422643050752e9dd6885e98/demo/demo_device_w_07.png)
+
+### Library Browser - Screen
+![Library](https://raw.githubusercontent.com/dannyzhu/roon-web-controller/ec47e4da4f69a8bfa422643050752e9dd6885e98/demo/demo_library_h_03.png)
+![Library](https://raw.githubusercontent.com/dannyzhu/roon-web-controller/ec47e4da4f69a8bfa422643050752e9dd6885e98/demo/demo_library_h_04.png)
+![Library](https://raw.githubusercontent.com/dannyzhu/roon-web-controller/ec47e4da4f69a8bfa422643050752e9dd6885e98/demo/demo_library_h_05.png)
+![Library](https://raw.githubusercontent.com/dannyzhu/roon-web-controller/ec47e4da4f69a8bfa422643050752e9dd6885e98/demo/demo_library_h_06.png)
+
 ### Dark Theme
 
 ![Dark Theme](https://raw.githubusercontent.com/pluggemi/project-screenshots/master/roon-web-controller/dark-Portrait.png)
@@ -48,21 +62,6 @@ The icons and text in this theme automatically adjust to show light or dark depe
 ![Dominant Color Theme](https://raw.githubusercontent.com/pluggemi/project-screenshots/master/roon-web-controller/color-Landscape.png)
 
 Album Credit: [Carbon Based Lifeforms, Twentythree](https://carbonbasedlifeforms.bandcamp.com/album/twentythree)
-
-### Library Browser - Home Screen
-
-![Library - Home](https://raw.githubusercontent.com/pluggemi/project-screenshots/master/roon-web-controller/library-Portrait-home.png)
-![Library - Home](https://raw.githubusercontent.com/pluggemi/project-screenshots/master/roon-web-controller/library-Landscape-home.png)
-
-### Library Browser - Artist Screen
-
-![Library - Artist](https://raw.githubusercontent.com/pluggemi/project-screenshots/master/roon-web-controller/library-Portrait-artist.png)
-![Library - Artist](https://raw.githubusercontent.com/pluggemi/project-screenshots/master/roon-web-controller/library-Landscape-artist.png)
-
-### Library Browser - Album Screen
-
-![Library - Album](https://raw.githubusercontent.com/pluggemi/project-screenshots/master/roon-web-controller/library-Portrait-album.png)
-![Library - Album](https://raw.githubusercontent.com/pluggemi/project-screenshots/master/roon-web-controller/library-Landscape-album.png)
 
 ## Installation
 
