@@ -103,12 +103,7 @@ function goBack() {
         contentType: "application/json",
         url: "/roonapi/goRefreshBrowse",
         success: function (payload) {
-            if (payload.error) {
-                console.log('Server Response Error: ' + payload.error);
-                document.location.reload();
-            } else {
-                showData(payload, settings.zoneID, 1);
-            }
+            showData(payload, settings.zoneID, 1);
         }
     });
 }
@@ -209,6 +204,17 @@ function goSearch() {
 }
 
 function showData(payload, zone_id) {
+
+    if (payload.error) {
+        console.log('[showData()] Server Response Error: ' + payload.error);
+        if (payload.error != 'ZoneNotFound') {
+            setTimeout(function () {
+                window.location.reload();
+            }, 2000)
+        }
+        return;
+    }
+
     $("#buttonRefresh")
         .html(getSVG("refresh"))
         .attr("onclick", "goRefresh()");
@@ -541,7 +547,7 @@ var getSVGOrImageForItem = function (item, list) {
     }
 
     if (hint === "action" || hint === "action_list") {
-        if (title === "Play Now" || title === "Play Playlist" || title === "Play Album" || title === "Play Artist" || title === "Play Track" || title === "Play Composer" || title === "Play Genre" || title === "Play Tag" || title === "Play From Here") {
+        if (title.startsWith("Play ")) {
             return getWrapSVG('play');
         }
         if (title === "Shuffle") {

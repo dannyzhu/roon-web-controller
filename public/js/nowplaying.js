@@ -5,7 +5,7 @@ var socket = io(undefined, {
     reconnectionAttempts: Infinity, // 无限次重连尝试
     reconnectionDelay: 1000,       // 每次重连之间的延迟时间（毫秒）
     reconnectionDelayMax: 1000,    // 最大延迟时间，保持和 reconnectionDelay 一致
-    timeout: 10000                 // 连接超时时间（毫秒）
+    timeout: 5000                 // 连接超时时间（毫秒）
 });
 
 socket.on('connect', () => {
@@ -237,8 +237,8 @@ function showPage() {
 function enableSockets() {
     socket.on("zoneList", function (payload) {
         $(".zoneList").html("");
-
-        if (payload !== undefined) {
+        console.log("240 zoneList payload: " + JSON.stringify(payload));
+        if (payload !== undefined && payload.length > 0) {
             var payloadids = [];
             for (var x in payload) {
                 $(".zoneList").append(
@@ -254,18 +254,28 @@ function enableSockets() {
                 );
                 payloadids.push(payload[x].zone_id);
             }
-            if (payloadids.includes(settings.zoneID) === false) {
-                $("#overlayZoneList").show();
+            if (payload.length == 1) {
+                selectZone(payload[0].zone_id, payload[0].display_name);
+            } else {
+                if (payloadids.includes(settings.zoneID) === false) {
+                    $("#overlayZoneList").show();
+                }
             }
+        } else {
+            console.log('Zone Not Found.');
+            $(".zoneList").html('<div class="messages"><p>Zone Not Found.</p></div>');
+            $("#overlayZoneList").show();
+            $('#overlayZoneList .overlayBackground').removeAttr('onclick');
         }
     });
 
     socket.on("zoneStatus", function (payload) {
+        // console.log('269 zoneStatus: ' + JSON.stringify(payload));
         if (settings.zoneID !== undefined) {
             for (var x in payload) {
                 if (payload[x].zone_id == settings.zoneID) {
                     curZone = payload[x];
-                    console.log(curZone);
+                    // console.log(curZone);
                     // Set zone button to active
                     $(".buttonZoneId").removeClass("buttonSettingActive");
                     $("#button-" + settings.zoneID).addClass("buttonSettingActive");
@@ -366,6 +376,9 @@ function showIsPlaying(curZone) {
     $("#notPlaying").hide();
     $("#isPlaying").show();
 
+    if(!curZone.now_playing.three_line.line1 || curZone.now_playing.three_line.line1.length < 1) {
+        console.log('380, curZone line1 is null, curZone: ' + JSON.stringify(curZone, null, 2));
+    }
     if (state.line1 != curZone.now_playing.three_line.line1) {
         state.line1 = curZone.now_playing.three_line.line1;
         fixFontSize();
@@ -582,7 +595,7 @@ function showIsPlaying(curZone) {
         }
     }
 
-    console.log(curZone);
+    // console.log(curZone);
     let outputs0 = curZone.outputs[0];
     let output_id = outputs0.output_id;
     let is_muted = outputs0.volume.is_muted;

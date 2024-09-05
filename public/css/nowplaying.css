@@ -342,4 +342,8 @@ input[type=range]:focus::-ms-fill-upper {
         width: 30%;
         height: 2em;
     }
+
+    .messages {
+        font-size: 8vw;
+    }
 }

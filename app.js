@@ -124,6 +124,8 @@ var roon = new RoonApi({
         transport = core_.services.RoonApiTransport;
 
         transport.subscribe_zones(function (response, data) {
+            // console.log('127 response: ' + JSON.stringify(response, null, 2));
+            // console.log('128 data: ' + JSON.stringify(data, null, 2));
             var i, x, y, zone_id, display_name;
             if (response == "Subscribed") {
                 for (x in data.zones) {
@@ -166,6 +168,7 @@ var roon = new RoonApi({
                         removeDuplicateList(zoneList, "zone_id");
                         removeDuplicateStatus(zoneStatus, "zone_id");
                     } else if (i == "zones_removed") {
+                        // console.log('171 zoneList: ' + JSON.stringify(zoneList, null, 2));
                         for (x in data.zones_removed) {
                             zoneList = zoneList.filter(function (zone) {
                                 return zone.zone_id != data.zones_removed[x];
@@ -176,6 +179,7 @@ var roon = new RoonApi({
                         }
                         removeDuplicateList(zoneList, "zone_id");
                         removeDuplicateStatus(zoneStatus, "zone_id");
+                        // console.log('171 zoneList: ' + JSON.stringify(zoneList, null, 2));
                     }
                 }
             }
