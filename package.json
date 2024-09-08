@@ -12,6 +12,7 @@
     "start": "node app.js"
   },
   "dependencies": {
+    "axios": "^1.7.7",
     "body-parser": "^1.19.0",
     "command-line-args": "^5.1.1",
     "command-line-usage": "^6.1.0",
@@ -24,9 +25,12 @@
     "node-roon-api-image": "github:roonlabs/node-roon-api-image",
     "node-roon-api-status": "github:roonlabs/node-roon-api-status",
     "node-roon-api-transport": "github:roonlabs/node-roon-api-transport",
-    "socket.io": "^2.3.0",
+    "node-ssdp": "^4.0.1",
     "serialport": "^12.0.0",
-    "usb": "^2.11.0"
+    "socket.io": "^2.3.0",
+    "usb": "^2.11.0",
+    "xml2js": "^0.6.2",
+    "xmldom": "^0.6.0"
   },
   "repository": {
     "type": "git",

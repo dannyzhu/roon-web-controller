@@ -5,11 +5,17 @@ var socket = io(undefined, {
     reconnectionAttempts: Infinity, // 无限次重连尝试
     reconnectionDelay: 1000,       // 每次重连之间的延迟时间（毫秒）
     reconnectionDelayMax: 1000,    // 最大延迟时间，保持和 reconnectionDelay 一致
-    timeout: 5000                 // 连接超时时间（毫秒）
+    timeout: 10000,                // 连接超时时间（毫秒）
+    query: {
+        subscribes: "roon",
+    },
 });
 
 socket.on('connect', () => {
     console.log('[NowPlaying] Socket.io Connected to server.');
+    // socket.emit("subscribe", {
+    //     type: "roon",
+    // });
 });
 
 socket.on('disconnect', (reason) => {
@@ -133,7 +139,7 @@ function notifyMe(three_line) {
 
     // At last, if the user has denied notifications, and you
     // want to be respectful there is no need to bother them any more.
-    console.log(notification);
+    // console.log(notification);
 }
 
 function fixFontSize() {

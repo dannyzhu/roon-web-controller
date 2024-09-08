@@ -1,5 +1,38 @@
 "use strict";
-var socket = io();
+var socket = io(undefined, {
+  reconnection: true,            // 启用自动重连
+  reconnectionAttempts: Infinity, // 无限次重连尝试
+  reconnectionDelay: 1000,       // 每次重连之间的延迟时间（毫秒）
+  reconnectionDelayMax: 1000,    // 最大延迟时间，保持和 reconnectionDelay 一致
+  timeout: 10000,                // 连接超时时间（毫秒）
+  query: {
+    subscribes: "roon",
+  },
+});
+
+socket.on('connect', () => {
+  console.log('[Fullscreen] Socket.io Connected to server.');
+  // socket.emit("subscribe", {
+  //   type: "roon",
+  // });
+});
+
+socket.on('disconnect', (reason) => {
+  console.log(`[Fullscreen] Socket.io Disconnected from server. Reason: ${reason}`);
+  // 在这里可以提示用户连接断开
+});
+
+socket.on('reconnect_attempt', (attempt) => {
+  console.log(`[Fullscreen] Socket.io Reconnection attempt ${attempt}`);
+});
+
+socket.on('reconnect', (attemptNumber) => {
+  console.log(`[Fullscreen] Socket.io Reconnected to server on attempt ${attemptNumber}`);
+});
+
+socket.on('reconnect_failed', () => {
+  console.log('[Fullscreen] Socket.io Failed to reconnect to the server.');
+});
 
 $(document).ready(function () {
   $("#buttonMenu").html(getSVG("menu"));
@@ -21,6 +54,7 @@ function showSection(sectionName) {
   switch (sectionName) {
     case "nowPlaying":
       $("#deviceBrowser").hide();
+      $("#renderDeviceBrowser").hide();
       $("#buttonMenu").hide();
       $("#buttonNowPlaying").hide();
       $("#buttonLibraryBrowser").show();
@@ -33,6 +67,7 @@ function showSection(sectionName) {
       break;
     case "libraryBrowser":
       $("#deviceBrowser").hide();
+      $("#renderDeviceBrowser").hide();
       $("#buttonMenu").hide();
       $("#buttonNowPlaying").show();
       $("#buttonLibraryBrowser").hide();
@@ -47,6 +82,17 @@ function showSection(sectionName) {
       $("#buttonNowPlaying").show();
       $("#buttonLibraryBrowser").hide();
       $("#deviceBrowser").show();
+      $("#renderDeviceBrowser").hide();
+      $("#libraryBrowser").hide();
+      $("#pairDisabled").hide();
+      $("#nowPlaying").hide();
+      $("#overlayMainMenu").hide();
+      break;
+    case "renderDeviceBrowser":
+      $("#buttonNowPlaying").show();
+      $("#buttonLibraryBrowser").hide();
+      $("#deviceBrowser").hide();
+      $("#renderDeviceBrowser").show();
       $("#libraryBrowser").hide();
       $("#pairDisabled").hide();
       $("#nowPlaying").hide();
@@ -60,6 +106,7 @@ function showSection(sectionName) {
       $("#buttonNowPlaying").hide();
       $("#buttonLibraryBrowser").hide();
       $("#deviceBrowser").hide();
+      $("#renderDeviceBrowser").hide();
 
       $("#libraryBrowser").hide();
       $("#nowPlaying").hide();

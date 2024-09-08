@@ -37,7 +37,7 @@
     <script src="/js/color-thief.js"></script>
     <script src="/js-cookie/js.cookie.js"></script>
     <script src="/socket.io/socket.io.js"></script>
-    <script src="/js/ma352.js"></script>
+    <script src="/js/auralic.js"></script>
     <script>
         $(window).on("orientationchange", function (event) {
             // fixFontSize();
@@ -54,23 +54,16 @@
     <!-- <div id="colorBackground"></div> -->
     <div id="notConnecting" class="overlay">
         <div class="messages">
-            <p>McIntosh Not Connected.</p>
+            <p>AURALiC Not Connected.</p>
         </div>
     </div>
-    <div id="isConnecting" class="overlay">
+    <div id="isConnecting">
         <div id="deviceInfo" class="deviceInfo">
-            <div id="deviceName" class="deviceInfoItem">McIntosh XX</div>
+            <div id="deviceName" class="deviceInfoItem">URALiC</div>
             <div id="deviceSerial" class="deviceInfoItem">Serial Number: XXXX</div>
             <div id="deviceVersion" class="deviceInfoItem">FW Version: X.XX</div>
         </div>
         <div id="deviceStatus" class="deviceStatus">
-            <!-- <div id="devicePower" class="deviceStatusItem">
-                <div class="deviceStatusItemLabel">POWER</div>
-                <div class="deviceStatusItemValues">
-                    <div class="deviceStatusItemValue">On</div>
-                    <div class="deviceStatusItemValue">Off</div>
-                </div>
-            </div> -->
             <div id="deviceInput" class="deviceStatusItem">
                 <div class="deviceStatusItemLabel">INPUTS</div>
                 <div id="inputDevicesList" class="deviceStatusItemValues">
@@ -104,6 +97,18 @@
                         <div class="inputDeviceName"><span id="inputDeviceNameSpan6"></span></div>
                         <div class="inputDeviceStatus"><span id="inputDeviceStatusSpan6"></span></div>
                     </button>
+                    <button type="button" class="buttonFillHeight devicesButton" id="buttonInputDevice7">
+                        <div class="inputDeviceSvg"><span id="inputDeviceSvgSpan7"></span></div>
+                        <div class="inputDeviceName"><span id="inputDeviceNameSpan7"></span></div>
+                        <div class="inputDeviceStatus"><span id="inputDeviceStatusSpan7"></span></div>
+                    </button>
+                </div>
+            </div>
+            <div id="deviceVolume" class="deviceStatusItem">
+                <div class="deviceStatusItemLabel">QUALITY</div>
+                <div class="deviceStatusItemValues">
+                    <div class="qualityType"><span id="qualityTypeSpan">High</span></div>
+                    <div class="qualityValue"><span id="qualityValueSpan">44.1kHz&nbsp;/&nbsp;16bit&nbsp;&nbsp;2ch</span></div>
                 </div>
             </div>
             <div id="deviceVolume" class="deviceStatusItem">
@@ -143,10 +148,10 @@
             <div id="controlsSettings">
                 <button type="button" class="buttonFillHeight settingsButton" id="buttonPower"></button>
                 <button type="button" class="buttonFillHeight settingsButton" id="buttonMute"></button>
-                <button type="button" class="buttonFillHeight settingsButton" id="buttonEqualizer"></button>
-                <button type="button" class="buttonFillHeight settingsButton" id="buttonGauge"></button>
-                <button type="button" class="buttonFillHeight settingsButton" id="buttonTube"></button>
-                <!-- <button type="button" class="buttonFillHeight settingsButton" id="buttonStereo"></button> -->
+                <button type="button" class="buttonFillHeight settingsButton" id="buttonRepeat"></button>
+                <button type="button" class="buttonFillHeight settingsButton" id="buttonShuffle"></button>
+                <button type="button" class="buttonFillHeight settingsButton" id="buttonPlay"></button>
+                <button type="button" class="buttonFillHeight settingsButton" id="buttonHiRes"></button>
                 <button type="button" class="buttonFillHeight settingsButton" id="buttonDevice"></button>
             </div>
         </div>

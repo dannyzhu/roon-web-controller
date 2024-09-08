@@ -104,7 +104,8 @@ var RoonApiTransport = require("node-roon-api-transport");
 var RoonApiBrowse = require("node-roon-api-browse");
 const fs = require('fs');
 const path = require('path');
-var Ma352 = require('./device_ma352.js');
+var Ma352 = require('./lib/device_ma352.js');
+const MediaDeviceManager = require('./lib/MediaDeviceManager');
 
 var roon = new RoonApi({
     extension_id: "com.pluggemi.web.controller",
@@ -119,7 +120,7 @@ var roon = new RoonApi({
         core = core_;
 
         pairStatus = true;
-        io.emit("pairStatus", JSON.parse('{"pairEnabled": ' + pairStatus + "}"));
+        emitToRoonSocket("pairStatus", JSON.parse('{"pairEnabled": ' + pairStatus + "}"));
 
         transport = core_.services.RoonApiTransport;
 
@@ -151,7 +152,7 @@ var roon = new RoonApi({
                                 }
                             }
                         }
-                        io.emit("zoneStatus", zoneStatus);
+                        emitToRoonSocket("zoneStatus", zoneStatus);
                     } else if (i == "zones_added") {
                         for (x in data.zones_added) {
                             zone_id = data.zones_added[x].zone_id;
@@ -188,7 +189,7 @@ var roon = new RoonApi({
 
     core_unpaired: function (core_) {
         pairStatus = false;
-        io.emit("pairStatus", JSON.parse('{"pairEnabled": ' + pairStatus + "}"));
+        emitToRoonSocket("pairStatus", JSON.parse('{"pairEnabled": ' + pairStatus + "}"));
     }
 });
 
@@ -217,7 +218,7 @@ function removeDuplicateList(array, property) {
     }
 
     zoneList = new_array;
-    io.emit("zoneList", zoneList);
+    emitToRoonSocket("zoneList", zoneList);
 }
 
 // Remove duplicates from zoneStatus array
@@ -234,7 +235,7 @@ function removeDuplicateStatus(array, property) {
     }
 
     zoneStatus = new_array;
-    io.emit("zoneStatus", zoneStatus);
+    emitToRoonSocket("zoneStatus", zoneStatus);
 }
 
 function refresh_browse(zone_id, options, callback, onerror) {
@@ -297,32 +298,145 @@ function load_browse(listoffset, callback, onerror) {
         }
     );
 }
+
+var roonSocketList = {};
+var mcIntoshSocketList = {};
+var renderDeviceSocketList = {};
+
 // ---------------------------- DEVICE --------------
 console.log("Starting device");
-var device = new Ma352();
-device.start({}, statusChangeCb);
+var mcIntoshDevice = new Ma352();
+mcIntoshDevice.start({}, statusChangeCb);
 
 function statusChangeCb(status, key, value) {
     // console.log("device statusChangeCb status=", status, ", ", key, ":", value);
     if (key == "error") {
         console.log("Device error: " + value);
     }
-    io.emit("deviceStatusChanged", { status: status, key: key, value: value });
+    emitToMcIntoshSocket("deviceStatusChanged", { status: status, key: key, value: value });
 }
+
+var renderDevices = [];
+var renderDeviceStatusArray = [];
+const manager = new MediaDeviceManager();
+(async () => {
+    await manager.init();
+    manager.on('renderDeviceInfo', (deviceInfo) => {
+        console.log('renderDeviceInfo: ' + JSON.stringify(deviceInfo, null, 2));
+        //find device in renderDevices
+        var findDevice = renderDevices.find((x) => x.id === deviceInfo.id);
+        let changed = false;
+        if (findDevice) {
+            if (JSON.stringify(findDevice) !== JSON.stringify(deviceInfo)) {
+                //remove device from renderDevices
+                renderDevices = renderDevices.filter((x) => x.id !== deviceInfo.id);
+                changed = true;
+            }
+        } else {
+            changed = true;
+        }
+        if (changed) {
+            renderDevices.push(deviceInfo);
+            emitToRenderDeviceSocket("renderDeviceInfoList", renderDevices);
+        }
+    });
+    manager.on('renderDeviceStatus', (deviceStatus) => {
+        console.log('339 renderDeviceStatus: ' + JSON.stringify(deviceStatus, null, 2));
+        //find device in renderDeviceStatus
+        var findDevice = renderDeviceStatusArray.find((x) => x.id === deviceStatus.id);
+        let changed = false;
+        if (findDevice) {
+            // console.log('344 findDevice: ###' + JSON.stringify(findDevice) + '###');
+            // console.log('345 deviceStatus: ###' + JSON.stringify(deviceStatus) + '###');
+            if (JSON.stringify(findDevice) !== JSON.stringify(deviceStatus)) {
+                //remove device from renderDeviceStatusArray
+                console.log('350 findDevice and changed');
+                renderDeviceStatusArray = renderDeviceStatusArray.filter((x) => x.id !== deviceStatus.id);
+                changed = true;
+            }
+        } else {
+            console.log('353 findDevice not found');
+            changed = true;
+        }
+        if (changed) {
+            console.log('356 changed');
+            renderDeviceStatusArray.push(deviceStatus);
+            emitToRenderDeviceSocket("renderDeviceStatus", deviceStatus);
+        }
+    });
+    await manager.start();
+})();
 
 // ---------------------------- WEB SOCKET --------------
 io.on("connection", function (socket) {
-    io.emit("pairStatus", JSON.parse('{"pairEnabled": ' + pairStatus + "}"));
-    io.emit("zoneList", zoneList);
-    io.emit("zoneStatus", zoneStatus);
 
-    io.emit("deviceCurrentStatus", {
-        device_id: "MA352",
-        status: device.getStatus()
+    let subscribes = socket.handshake.query.subscribes;
+    console.log("subscribes: " + subscribes);
+    //split subscribes by comma
+    if (subscribes) {
+        let subscribesArray = subscribes.split(',');
+        for (const type of subscribesArray) {
+            if (type == "roon") {
+                roonSocketList[socket.id] = socket;
+                initRoonSocket(socket);
+            } else if (type == "mcIntosh") {
+                mcIntoshSocketList[socket.id] = socket;
+                initMcIntoshSocket(socket);
+            } else if (type == "renderDevice") {
+                renderDeviceSocketList[socket.id] = socket;
+                initRenderDeviceSocket(socket);
+            }
+        }
+    }
+
+    socket.on("subscribe", function (msg) {
+        // console.log("subscribe: " + JSON.stringify(msg) + ", from " + socket.id);
+        // if (msg.type == "roon") {
+        //     roonSocketList[socket.id] = socket;
+        //     initRoonSocket(socket);
+        // } else if (msg.type == "mcIntosh") {
+        //     mcIntoshSocketList[socket.id] = socket;
+        //     initMcIntoshSocket(socket);
+        // } else if (msg.type == "renderDevice") {
+        //     renderDeviceSocketList[socket.id] = socket;
+        //     initRenderDeviceSocket(socket);
+        // }
     });
 
+    socket.on("disconnect", function () {
+        // console.log("disconnect: " + socket.id);
+        delete roonSocketList[socket.id];
+        delete mcIntoshSocketList[socket.id];
+        delete renderDeviceSocketList[socket.id];
+    });
+
+});
+
+// ------ emit to socket ------
+
+function emitToRoonSocket(event, data) {
+    for (const socket of Object.values(roonSocketList)) {
+        socket.emit(event, data);
+    }
+}
+
+function emitToMcIntoshSocket(event, data) {
+    for (const socket of Object.values(mcIntoshSocketList)) {
+        socket.emit(event, data);
+    }
+}
+
+function emitToRenderDeviceSocket(event, data) {
+    for (const socket of Object.values(renderDeviceSocketList)) {
+        socket.emit(event, data);
+    }
+}
+
+// ---------------------------- ROON --------------
+function initRoonSocket(socket) {
+
     socket.on("getZone", function () {
-        io.emit("zoneStatus", zoneStatus);
+        io.to(socket.id).emit("zoneStatus", zoneStatus);
     });
 
     socket.on("changeVolume", function (msg) {
@@ -372,51 +486,150 @@ io.on("connection", function (socket) {
         transport.mute(msg.output_id, msg.how);
     });
 
-    // ---------------------------- DEVICE --------------
+    io.to(socket.id).emit("pairStatus", JSON.parse('{"pairEnabled": ' + pairStatus + "}"));
+    io.to(socket.id).emit("zoneList", zoneList);
+    io.to(socket.id).emit("zoneStatus", zoneStatus);
+
+}
+
+// ---------------------------- McIntosh DEVICE --------------
+function initMcIntoshSocket(socket) {
+
     socket.on("webDeviceChangeVolumeUp", function (msg) {
         console.log("webDeviceChangeVolumeUp: " + JSON.stringify(msg));
-        device.volumeUp();
+        mcIntoshDevice.volumeUp();
     });
 
     socket.on("webDeviceChangeVolumeDown", function (msg) {
         console.log("webDeviceChangeVolumeDown: " + JSON.stringify(msg));
-        device.volumeDown();
+        mcIntoshDevice.volumeDown();
     });
 
     socket.on("webDeviceChangeVolume", function (msg) {
         console.log("webDeviceChangeVolume: " + JSON.stringify(msg));
-        device.setVolume(msg.volume);
+        mcIntoshDevice.setVolume(msg.volume);
     });
 
     socket.on("webDeviceChangeInput", function (msg) {
         console.log("webDeviceChangeInput: " + JSON.stringify(msg));
-        device.setInput(msg.input);
+        mcIntoshDevice.setInput(msg.input);
     });
 
     socket.on("webDeviceChangeMute", function (msg) {
         console.log("webDeviceChangeMute: " + JSON.stringify(msg));
         if (msg.how == "unmute") {
-            device.mute(0);
+            mcIntoshDevice.mute(0);
         } else {
-            device.mute(1);
+            mcIntoshDevice.mute(1);
         }
     });
 
     socket.on("webDeviceStatusChange", function (msg) {
         console.log("webDeviceStatusChange: " + JSON.stringify(msg));
-        device.setStatus(msg.key, msg.value);
+        mcIntoshDevice.setStatus(msg.key, msg.value);
     });
 
     socket.on("webDevicePowerOn", function (msg) {
         console.log("webDevicePowerOn: " + JSON.stringify(msg));
-        device.powerOn();
+        mcIntoshDevice.powerOn();
     });
 
     socket.on("webDevicePowerOff", function (msg) {
         console.log("webDevicePowerOff: " + JSON.stringify(msg));
-        device.powerOff();
+        mcIntoshDevice.powerOff();
     });
-});
+
+    io.to(socket.id).emit("deviceCurrentStatus", {
+        device_id: "MA352",
+        status: mcIntoshDevice.getStatus()
+    });
+
+}
+
+// ---------------------------- Render Deivce --------------
+function initRenderDeviceSocket(socket) {
+
+    socket.on("webRenderDeviceChangeVolumeUp", async function (msg) {
+        console.log("webRenderDeviceChangeVolumeUp: " + JSON.stringify(msg));
+        let deviceId = msg.deviceId;
+        let device = manager.getMediaDeviceById(deviceId);
+        if (device) {
+            await device.setVolumeUp();
+        }
+    });
+
+    socket.on("webRenderDeviceChangeVolumeDown", async function (msg) {
+        console.log("webRenderDeviceChangeVolumeDown: " + JSON.stringify(msg));
+        let deviceId = msg.deviceId;
+        let device = manager.getMediaDeviceById(deviceId);
+        if (device) {
+            await device.setVolumeDown();
+        }
+    });
+
+    socket.on("webRenderDeviceChangeVolume", async function (msg) {
+        console.log("webRenderDeviceChangeVolume: " + JSON.stringify(msg));
+        let deviceId = msg.deviceId;
+        let volume = msg.volume;
+        let device = manager.getMediaDeviceById(deviceId);
+        if (device) {
+            await device.setVolume(volume);
+        }
+    });
+
+    socket.on("webRenderDeviceChangeInput", async function (msg) {
+        console.log("webRenderDeviceChangeInput: " + JSON.stringify(msg));
+        let deviceId = msg.deviceId;
+        let inputIndex = msg.input;
+        let device = manager.getMediaDeviceById(deviceId);
+        if (device) {
+            await device.setSourceIndex(inputIndex);
+        }
+    });
+
+    socket.on("webRenderDeviceChangeMute", async function (msg) {
+        console.log("webRenderDeviceChangeMute: " + JSON.stringify(msg));
+        let deviceId = msg.deviceId;
+        let device = manager.getMediaDeviceById(deviceId);
+        if (device) {
+            if (msg.how == "mute") {
+                await device.setMute(true);
+            } else {
+                await device.setMute(false);
+            }
+        }
+    });
+
+    socket.on("webRenderDeviceStatusChange", async function (msg) {
+        console.log("webRenderDeviceStatusChange: " + JSON.stringify(msg));
+        let deviceId = msg.deviceId;
+        let device = manager.getMediaDeviceById(deviceId);
+        if (device) {
+            if (msg.key == "shuffle") {
+                // console.log("webRenderDeviceStatusChange: shuffle");
+                await device.setToggleShuffle();
+            } else if (msg.key == "repeat") {
+                // console.log("webRenderDeviceStatusChange: repeat");
+                await device.setToggleLoop();
+            }
+        }
+    });
+
+    socket.on("webRenderDevicePowerOn", async function (msg) {
+        console.log("webRenderDevicePowerOn: " + JSON.stringify(msg));
+    });
+
+    socket.on("webRenderDevicePowerOff", async function (msg) {
+        console.log("webRenderDevicePowerOff: " + JSON.stringify(msg));
+    });
+
+    io.to(socket.id).emit("renderDeviceInfoList", renderDevices);
+    //for renderDeviceStatusArray
+    for (const deviceStatus of renderDeviceStatusArray) {
+        io.to(socket.id).emit("renderDeviceStatus", deviceStatus);
+    }
+
+}
 
 function imageHandle(req, res, imageKey, imageSize) {
     let fileName = imageKey + '_' + imageSize + '.jpg';

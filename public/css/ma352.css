@@ -446,6 +446,17 @@ input[type=range]:focus::-ms-fill-upper {
     padding: 0;
 }
 
+.qualityType {
+    width: 20%;
+    text-align: right;
+}
+
+.qualityValue {
+    width: 80%;
+    text-align: center;
+    padding-right: 5vw;
+}
+
 /* 竖屏布局 */
 @media screen and (max-width: 767px) {
     #isConnecting {
@@ -458,7 +469,17 @@ input[type=range]:focus::-ms-fill-upper {
     }
 
     #deviceName {
-        font-size: clamp(2rem, 10vw, 7rem);
+        /* font-size: clamp(2rem, 10vw, 7rem); */
+        display: block; /* Ensures the element takes up its own line */
+        text-align: center; /* Centers the text horizontally */
+        width: 90vw; /* Sets the width to 90% of the viewport width, leaving 5% padding on each side */
+        padding-left: 3vw;
+        padding-right: 3vw;
+        margin: 0 auto; /* Centers the element itself */
+        font-size: calc(6vw + 1vh); /* Adjusts font size dynamically based on viewport width and height */
+        white-space: nowrap; /* Prevents text from wrapping */
+        overflow: hidden; /* Ensures content that overflows is hidden */
+        text-overflow: ellipsis; /* Adds ellipsis if text is too long */
     }
 
     .deviceStatus {
@@ -536,4 +557,13 @@ input[type=range]:focus::-ms-fill-upper {
         width: 30%;
         padding: 0;
     }
+
+    .qualityType {
+        width: 30%;
+    }
+    
+    .qualityValue {
+        width: 70%;
+    }
+    
 }

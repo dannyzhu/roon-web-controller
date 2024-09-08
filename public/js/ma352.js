@@ -36,13 +36,13 @@ var buttonStatus = [
         name: "Equalizer",
         clickEnable: true,
     },
-    {
-        svg: "stereo",
-        button: "buttonStereo",
-        key: "TMO",
-        name: "Mono / Stereo",
-        clickEnable: true,
-    },
+    // {
+    //     svg: "stereo",
+    //     button: "buttonStereo",
+    //     key: "TMO",
+    //     name: "Mono / Stereo",
+    //     clickEnable: true,
+    // },
     {
         svg: "gauge",
         button: "buttonGauge",
@@ -143,6 +143,15 @@ $(document).ready(function () {
         .removeClass("buttonAvailable buttonInactive")
         .css("color", css.foregroundColor);
 
+    $("#buttonDevice")
+        .html(getSVG("device"))
+        .attr("onclick", "clickDeviceButton()")
+        .attr("name", "Device Control")
+        .attr("aria-label", "Device Control")
+        .attr("aria-disabled", false)
+        .removeClass("buttonAvailable buttonInactive")
+        .css("color", css.foregroundColor);
+
     // Input Devices
     // $("#buttonInputDevice1")
     //     .attr("name", "Input Device 1")
@@ -180,34 +189,49 @@ $(document).ready(function () {
     enableSockets();
 });
 
+function clickDeviceButton() {
+    if (window.self !== window.top) {
+        // window.parent.document.getElementById('deviceBrowserFrame').src = 'auralic.html';
+        parent.showSection('renderDeviceBrowser');
+    } else {
+        window.location.href = 'auralic.html';
+    }
+}
+
 function enableSockets() {
     socket = io(undefined, {
         reconnection: true,            // 启用自动重连
         reconnectionAttempts: Infinity, // 无限次重连尝试
         reconnectionDelay: 1000,       // 每次重连之间的延迟时间（毫秒）
         reconnectionDelayMax: 1000,    // 最大延迟时间，保持和 reconnectionDelay 一致
-        timeout: 10000                 // 连接超时时间（毫秒）
+        timeout: 10000,                // 连接超时时间（毫秒）
+        query: {
+            subscribes: "mcIntosh",
+        },
     });
 
     socket.on('connect', () => {
-        console.log('[NowPlaying] Socket.io Connected to server.');
+        console.log('[McIntosh MA352] Socket.io Connected to server.');
+        // socket.emit("subscribe", {
+        //     type: "mcIntosh",
+        // });
     });
 
     socket.on('disconnect', (reason) => {
-        console.log(`[NowPlaying] Socket.io Disconnected from server. Reason: ${reason}`);
+        console.log(`[McIntosh MA352] Socket.io Disconnected from server. Reason: ${reason}`);
         // 在这里可以提示用户连接断开
     });
 
     socket.on('reconnect_attempt', (attempt) => {
-        console.log(`[NowPlaying] Socket.io Reconnection attempt ${attempt}`);
+        console.log(`[McIntosh MA352] Socket.io Reconnection attempt ${attempt}`);
     });
 
     socket.on('reconnect', (attemptNumber) => {
-        console.log(`[NowPlaying] Socket.io Reconnected to server on attempt ${attemptNumber}`);
+        console.log(`[McIntosh MA352] Socket.io Reconnected to server on attempt ${attemptNumber}`);
     });
 
     socket.on('reconnect_failed', () => {
-        console.log('[NowPlaying] Socket.io Failed to reconnect to the server.');
+        console.log('[McIntosh MA352] Socket.io Failed to reconnect to the server.');
     });
 
     socket.on("deviceCurrentStatus", (msg) => {
@@ -232,7 +256,7 @@ function enableSockets() {
                     for (const [key, value] of Object.entries(msg.status.others)) {
                         onButtonStatusChange(key, value);
                     }
-                }                    
+                }
             } else {
                 console.log("deviceCurrentStatus: " + msg.device_id + " status is null");
             }
@@ -670,6 +694,8 @@ function getSVG(cmd) {
             return '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M6.95 8.653A7.338 7.338 0 0 0 5.147 13H7v1H5.149a7.324 7.324 0 0 0 1.81 4.346l1.29-1.29.707.708C7.22 19.5 7.633 19.079 6.963 19.777a8.373 8.373 0 1 1 11.398-12.26l-.71.71A7.353 7.353 0 0 0 13 6.147V8h-1V6.146a7.338 7.338 0 0 0-4.342 1.8L8.973 9.26l-.707.707zm13.16 1.358l-.76.76a7.303 7.303 0 0 1-1.301 7.565L16.75 17.04l-.707.707 1.993 2.031a8.339 8.339 0 0 0 2.073-9.766zM3 13.5a9.492 9.492 0 0 1 16.15-6.772l.711-.71a10.493 10.493 0 1 0-14.364 15.29l.694-.725A9.469 9.469 0 0 1 3 13.5zm17.947-4.326a9.442 9.442 0 0 1-2.138 11.41l.694.724a10.473 10.473 0 0 0 2.19-12.88zm1.578-4.406l.707.707-8.648 8.649a2.507 2.507 0 1 1-.707-.707zM14 15.5a1.5 1.5 0 1 0-1.5 1.5 1.502 1.502 0 0 0 1.5-1.5z"></path><path fill="none" d="M0 0h24v24H0z"></path></g></svg>';
         case "stereo":
             return '<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><title></title><g data-name="Layer 14" id="Layer_14"><path d="M16,1A15,15,0,0,0,1,16v8a1,1,0,0,0,2,0V16a13,13,0,0,1,26,0v8a1,1,0,0,0,2,0V16A15,15,0,0,0,16,1Z"></path><path d="M8.49,17h-1A3.51,3.51,0,0,0,4,20.51v7A3.51,3.51,0,0,0,7.51,31h1A3.51,3.51,0,0,0,12,27.49v-7A3.51,3.51,0,0,0,8.49,17ZM10,27.49A1.52,1.52,0,0,1,8.49,29h-1A1.52,1.52,0,0,1,6,27.49v-7A1.52,1.52,0,0,1,7.51,19h1A1.52,1.52,0,0,1,10,20.51Z"></path><path d="M24.49,17h-1A3.51,3.51,0,0,0,20,20.51v7A3.51,3.51,0,0,0,23.51,31h1A3.51,3.51,0,0,0,28,27.49v-7A3.51,3.51,0,0,0,24.49,17ZM26,27.49A1.52,1.52,0,0,1,24.49,29h-1A1.52,1.52,0,0,1,22,27.49v-7A1.52,1.52,0,0,1,23.51,19h1A1.52,1.52,0,0,1,26,20.51Z"></path></g></g></svg>';
+        case "device":
+            return '<svg viewBox="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><g id="layer1"><path d="M 1 6 L 0 7 L 0 14 L 1 15 L 19 15 L 20 14 L 20 7 L 19 6 L 9.5 6 L 10.5 7 L 18.5 7 L 19 7.5 L 19 13.5 L 18.5 14 L 1.5 14 L 1 13.5 L 1 7.5 L 1.5 7 L 2.5 7 L 3.5 6 L 1 6 z M 6.5 6 C 4.5729257 6 3 7.5729257 3 9.5 C 3 11.427074 4.5729257 13 6.5 13 C 8.4270743 13 10 11.427074 10 9.5 C 10 7.5729257 8.4270743 6 6.5 6 z M 6.5 7 C 7.8866342 7 9 8.1133658 9 9.5 C 9 10.886634 7.8866342 12 6.5 12 C 5.1133658 12 4 10.886634 4 9.5 C 4 8.1133658 5.1133658 7 6.5 7 z M 13 8 L 13 9 L 17 9 L 17 8 L 13 8 z M 13 10 L 13 11 L 17 11 L 17 10 L 13 10 z M 13 12 L 13 13 L 17 13 L 17 12 L 13 12 z"></path></g></g></svg>';
         default:
             break;
     }

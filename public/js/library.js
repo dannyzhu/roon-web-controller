@@ -5,11 +5,17 @@ var socket = io(undefined, {
     reconnectionAttempts: Infinity, // 无限次重连尝试
     reconnectionDelay: 1000,       // 每次重连之间的延迟时间（毫秒）
     reconnectionDelayMax: 1000,    // 最大延迟时间，保持和 reconnectionDelay 一致
-    timeout: 10000                 // 连接超时时间（毫秒）
+    timeout: 10000,                // 连接超时时间（毫秒）
+    query: {
+        subscribes: "roon",
+    },
 });
 
 socket.on('connect', () => {
     console.log('[Library] Socket.io Connected to server.');
+    // socket.emit("subscribe", {
+    //     type: "roon",
+    // });
 });
 
 socket.on('disconnect', (reason) => {
@@ -97,6 +103,8 @@ function goBack() {
     data.zone_id = settings.zoneID;
     data.options = { pop_levels: 1 };
 
+    console.log("goBack: ", JSON.stringify(data, null, 2));
+    
     $.ajax({
         type: "POST",
         data: JSON.stringify(data),
@@ -113,6 +121,8 @@ function goHome() {
     data.zone_id = settings.zoneID;
     data.options = { pop_all: true };
 
+    console.log("goHome: ", JSON.stringify(data, null, 2));
+
     $.ajax({
         type: "POST",
         data: JSON.stringify(data),
@@ -128,6 +138,8 @@ function goRefresh() {
     var data = {};
     data.zone_id = settings.zoneID;
     data.options = { refresh_list: true };
+
+    console.log("goRefresh: ", JSON.stringify(data, null, 2));
 
     $.ajax({
         type: "POST",
@@ -151,6 +163,8 @@ function goList(item_key, listoffset) {
         data.listoffset = listoffset;
     }
 
+    console.log("goList: ", JSON.stringify(data, null, 2));
+
     $.ajax({
         type: "POST",
         data: JSON.stringify(data),
@@ -169,6 +183,8 @@ function goPage(listoffset) {
     } else {
         data.listoffset = listoffset;
     }
+
+    console.log("goPage: ", JSON.stringify(data, null, 2));
 
     $.ajax({
         type: "POST",
@@ -214,6 +230,8 @@ function showData(payload, zone_id) {
         }
         return;
     }
+
+    // console.log(JSON.stringify(payload, null, 2));
 
     $("#buttonRefresh")
         .html(getSVG("refresh"))
@@ -373,6 +391,7 @@ function showData(payload, zone_id) {
             $("#navLine2").show();
             $("#content").css("bottom", "48px");
         }
+        contentScrollToTop();
     }
 }
 
@@ -569,4 +588,29 @@ var getSVGOrImageForItem = function (item, list) {
     }
 
     return getWrapSVG('album');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    var scrollToTopBtn = document.getElementById("scrollToTopBtn");
+    var content = document.getElementById("content");
+
+    content.onscroll = function() {
+        if (content.scrollTop > 100) {
+            scrollToTopBtn.style.display = "block";
+        } else {
+            scrollToTopBtn.style.display = "none";
+        }
+    };
+
+    scrollToTopBtn.onclick = function() {
+        contentScrollToTop();
+    };
+});
+
+function contentScrollToTop() {
+    var content = document.getElementById("content");
+    content.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
 }
