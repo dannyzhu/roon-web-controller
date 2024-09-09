@@ -1,6 +1,7 @@
 "use strict";
 //var socket = io();
 var socket = io(undefined, {
+    autoConnect: false,            // 初始化时不自动连接
     reconnection: true,            // 启用自动重连
     reconnectionAttempts: Infinity, // 无限次重连尝试
     reconnectionDelay: 1000,       // 每次重连之间的延迟时间（毫秒）
@@ -8,6 +9,7 @@ var socket = io(undefined, {
     timeout: 10000,                // 连接超时时间（毫秒）
     query: {
         subscribes: "roon",
+        source: 'nowplaying',
     },
 });
 
@@ -38,14 +40,38 @@ socket.on('reconnect_failed', () => {
 var noSleep = new NoSleep();
 var curZone;
 var css = [];
-var settings = [];
+var settings = {
+    showPlaylist: true,
+};
 var state = [];
 var inVolumeSlider = false;
 
 $(document).ready(function () {
     showPage();
     fixFontSize();
+
+    $('#containerCoverImage').on('dblclick', function(event) {
+        // console.log('dblclick: ', event);
+        event.preventDefault();
+        doubleLClick();
+    });
+
+    $('#containerPlaylist').on('dblclick', function(event) {
+        // console.log('dblclick: ', event);
+        event.preventDefault();
+        doubleLClick();
+    });
 });
+
+function doubleLClick() {
+    // console.log('doubleLClick');
+    if (settings.showPlaylist === true) {
+        settings.showPlaylist = false;
+    } else {
+        settings.showPlaylist = true;
+    }
+    showOrHidePlaylist();
+}
 
 function toggleCircleIcon() {
     if ($("#circleIconsSwitch").is(":checked", false)) {
@@ -293,6 +319,34 @@ function enableSockets() {
             }
         }
     });
+
+    socket.on("queueStatus", function (payload) {
+        console.log("296 queueStatus: ", payload);
+        if (payload.zone_id !== settings.zoneID) {
+            console.log("302 payload.zone_id !== settings.zoneID: ", payload.zone_id, settings.zoneID);
+            return;
+        }
+
+        let itemList = payload.items;
+        if(!itemList) {
+            let changes = payload.changes;
+            //changes is array, find operation is insert
+            if (changes && Array.isArray(changes)) {
+                let insert = changes.find(item => item.operation === 'insert');
+                if(insert && insert.items) {
+                    itemList = insert.items;
+                }
+            }
+        }
+        // console.log("302 itemList: ", itemList);
+        if (itemList.length === 0) {
+            console.log("309 itemList.length === 0");
+            return;
+        }
+        updatePlaylist(itemList);
+    });
+
+    socket.connect();
 }
 
 function selectZone(zone_id, display_name) {
@@ -319,6 +373,47 @@ function updateZone(curZone) {
         showIsPlaying(curZone);
     } else {
         showNotPlaying();
+    }
+}
+
+function updatePlaylist(itemList) {
+    //create div with class roonPlaylist
+    let playlist = $('<div class="roonPlaylist"></div>');
+    //for each item in itemList
+    for (let item of itemList) {
+        let len = itemList.length;
+        //len is second, convert to mm:ss
+        let mm = Math.floor(item.length / 60);
+        let ss = Math.floor(item.length % 60);
+        let lenStr = (mm < 10 ? "0" + mm : mm) + ":" + (ss < 10 ? "0" + ss : ss);
+        let title = item.three_line?.line1;
+        let artist = item.three_line?.line2;
+        let album = item.three_line?.line3;
+        let subTitle = artist + ((artist && album) ? '&nbsp;-&nbsp;' : '') + album;
+        //create div with class roonPlaylistItem
+        let itemDiv = $(`<div class="rp_Item">
+            <img src="/roonapi/image/${item.image_key}.jpg" class="rp_ItemImage">
+            <div class="rp_ItemInfo">
+                <div class="rp_ItemTitle">${title}</div>
+                <div class="rp_ItemSubTitle">${lenStr}&nbsp;&nbsp;${subTitle}</div>
+            </div>
+        </div>`);
+        //append to playlist
+        playlist.append(itemDiv);
+    }
+    //append to #containerPlaylist
+    $("#containerPlaylist").html("");
+    $("#containerPlaylist").append(playlist);
+    showOrHidePlaylist();
+}
+
+function showOrHidePlaylist() {
+    if (settings.showPlaylist === true) {
+        $("#containerPlaylist").show();
+        $("#containerCoverImage").hide();
+    } else {
+        $("#containerPlaylist").hide();
+        $("#containerCoverImage").show();
     }
 }
 
@@ -382,7 +477,7 @@ function showIsPlaying(curZone) {
     $("#notPlaying").hide();
     $("#isPlaying").show();
 
-    if(!curZone.now_playing.three_line.line1 || curZone.now_playing.three_line.line1.length < 1) {
+    if (!curZone.now_playing.three_line.line1 || curZone.now_playing.three_line.line1.length < 1) {
         console.log('380, curZone line1 is null, curZone: ' + JSON.stringify(curZone, null, 2));
     }
     if (state.line1 != curZone.now_playing.three_line.line1) {

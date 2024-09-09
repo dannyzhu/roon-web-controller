@@ -34,6 +34,14 @@
         height: 59%;
     }
 
+    #containerPlaylist {
+        position: absolute;
+        top: 0px;
+        right: 0px;
+        left: 0px;
+        height: 59%;
+    }
+
     #containerMusicInfo {
         position: absolute;
         bottom:0px;
@@ -59,6 +67,14 @@
         width: 49%;
     }
 
+    #containerPlaylist {
+        position: absolute;
+        top: 0px;
+        bottom: 0px;
+        left: 0px;
+        width: 49%;
+    }
+
     #containerMusicInfo {
         position: absolute;
         top: 54px;
@@ -76,6 +92,12 @@
 }
 
 #containerCoverImage {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#containerPlaylist {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -346,4 +368,99 @@ input[type=range]:focus::-ms-fill-upper {
     .messages {
         font-size: 8vw;
     }
+}
+
+/* Playlist css */
+.roonPlaylist {
+    max-height: 100vh;
+    max-width: 100%;
+    padding: 1em 0 1em 0.5em;
+    /* overflow-y: auto; */
+    overflow-y: scroll;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;  /* IE and Edge */
+
+    /* 右侧渐变透明 */
+    -webkit-mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 80%, rgba(0, 0, 0, 0) 100%);
+    mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 80%, rgba(0, 0, 0, 0) 100%);
+
+}
+
+.roonPlaylist::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, and Opera */
+}
+
+.rp_Item {
+    display: flex;
+    width: 100%;
+    height: 4em;
+    margin-bottom: 0.5em;
+    background-color: rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.5);
+    border-radius: 0.5em;
+    overflow: hidden;
+}
+
+@media (orientation: portrait) {
+    .roonPlaylist {
+        height: 100%;
+        padding: 0;
+    }
+
+    .rp_Item {
+        height: 4em;
+    }
+
+    .rp_ItemTitle,
+    .rp_ItemSubTitle {
+        white-space: normal;
+        word-break: break-word;
+        text-overflow: ellipsis;
+    }
+
+    .roonPlaylist {
+        max-height: 100vh;
+        max-width: 100%;
+        overflow-y: scroll;
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none;  /* IE and Edge */
+        position: relative;
+        -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1) 90%, rgba(0, 0, 0, 0) 100%);
+        mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1) 90%, rgba(0, 0, 0, 0) 100%);
+    }
+
+    .roonPlaylist::-webkit-scrollbar {
+        display: none; /* Chrome, Safari, and Opera */
+    }
+}
+
+.rp_ItemImage {
+    padding: 0.3em;
+    height: auto;
+    width: auto;
+    border-radius: 0.5em;
+}
+
+.rp_ItemInfo {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex: 1;
+    padding-left: 0.5em;
+    overflow: hidden;
+}
+
+.rp_ItemTitle {
+    font-size: 130%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.rp_ItemSubTitle {
+    font-size: 90%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0.3em 0
 }

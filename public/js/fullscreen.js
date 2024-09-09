@@ -1,5 +1,6 @@
 "use strict";
 var socket = io(undefined, {
+  autoConnect: false,            // 初始化时不自动连接
   reconnection: true,            // 启用自动重连
   reconnectionAttempts: Infinity, // 无限次重连尝试
   reconnectionDelay: 1000,       // 每次重连之间的延迟时间（毫秒）
@@ -7,6 +8,7 @@ var socket = io(undefined, {
   timeout: 10000,                // 连接超时时间（毫秒）
   query: {
     subscribes: "roon",
+    source: 'fullscreen',
   },
 });
 
@@ -48,6 +50,8 @@ $(document).ready(function () {
       showSection("pairDisabled");
     }
   });
+
+  socket.connect();
 });
 
 function showSection(sectionName) {

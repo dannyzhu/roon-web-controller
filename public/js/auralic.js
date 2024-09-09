@@ -344,6 +344,7 @@ function clickDeviceButton() {
 
 function enableSockets() {
     socket = io(undefined, {
+        autoConnect: false,            // 初始化时不自动连接
         reconnection: true,            // 启用自动重连
         reconnectionAttempts: Infinity, // 无限次重连尝试
         reconnectionDelay: 1000,       // 每次重连之间的延迟时间（毫秒）
@@ -351,6 +352,7 @@ function enableSockets() {
         timeout: 10000,                // 连接超时时间（毫秒）
         query: {
             subscribes: "renderDevice",
+            source: 'auralic',
         },
     });
 
@@ -379,13 +381,13 @@ function enableSockets() {
     });
 
     socket.on("renderDeviceInfoList", (msg) => {
-        console.log("renderDeviceInfoList: " + JSON.stringify(msg));
+        // console.log("renderDeviceInfoList: " + JSON.stringify(msg));
         updateDeviceList(msg);
     });
 
     socket.on("renderDeviceStatus", (msg) => {
-        console.log("renderDeviceStatus: " + JSON.stringify(msg));
-        console.log("curDeviceId: " + curDeviceId);
+        // console.log("renderDeviceStatus: " + JSON.stringify(msg));
+        // console.log("curDeviceId: " + curDeviceId);
         if (msg.deviceId === curDeviceId) {
             if (JSON.stringify(auralicStatus) !== JSON.stringify(msg)) {
                 onDeviceStatusChanged(msg);
@@ -396,6 +398,8 @@ function enableSockets() {
             console.log("renderDeviceStatus: " + msg.deviceId + " is not supported");
         }
     });
+
+    socket.connect();
 }
 
 function onDeviceStatusChanged(msg) {
@@ -412,7 +416,7 @@ function onDeviceStatusChanged(msg) {
 
 function updateDeviceList(msg) {
     for (const deviceInfo of msg) {
-        console.log("deviceInfo: " + JSON.stringify(deviceInfo));
+        // console.log("deviceInfo: " + JSON.stringify(deviceInfo));
         if (deviceInfo.manufacturer !== "AURALIC") {
             console.log("deviceInfo: " + JSON.stringify(deviceInfo) + " is not supported");
             continue;

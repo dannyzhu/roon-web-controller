@@ -200,6 +200,7 @@ function clickDeviceButton() {
 
 function enableSockets() {
     socket = io(undefined, {
+        autoConnect: false,            // 初始化时不自动连接
         reconnection: true,            // 启用自动重连
         reconnectionAttempts: Infinity, // 无限次重连尝试
         reconnectionDelay: 1000,       // 每次重连之间的延迟时间（毫秒）
@@ -207,6 +208,7 @@ function enableSockets() {
         timeout: 10000,                // 连接超时时间（毫秒）
         query: {
             subscribes: "mcIntosh",
+            source: 'ma352',
         },
     });
 
@@ -283,6 +285,8 @@ function enableSockets() {
             onButtonStatusChange(msg.key, msg.value);
         }
     });
+
+    socket.connect();
 }
 
 function onConnected(connected) {
@@ -411,7 +415,7 @@ function onPowerChanged(power) {
 }
 
 function onButtonStatusChange(key, value) {
-    console.log("buttonStatusChange: " + key + " = " + value);
+    // console.log("buttonStatusChange: " + key + " = " + value);
     var button = buttonStatus.find((x) => x.key === key);
     if (button) {
         if (button.clickEnable) {
@@ -437,7 +441,7 @@ function onButtonStatusChange(key, value) {
         }
 
     } else {
-        console.log("buttonStatusChange: " + key + " is not supported");
+        // console.log("buttonStatusChange: " + key + " is not supported");
     }
 
 }

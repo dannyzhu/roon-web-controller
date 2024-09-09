@@ -102,6 +102,10 @@ var RoonApiImage = require("node-roon-api-image");
 var RoonApiStatus = require("node-roon-api-status");
 var RoonApiTransport = require("node-roon-api-transport");
 var RoonApiBrowse = require("node-roon-api-browse");
+
+// import RoonApiSettings   from 'node-roon-api-settings';
+// import RoonApiAudioInput from 'node-roon-api-audioinput';
+
 const fs = require('fs');
 const path = require('path');
 var Ma352 = require('./lib/device_ma352.js');
@@ -129,6 +133,7 @@ var roon = new RoonApi({
             // console.log('128 data: ' + JSON.stringify(data, null, 2));
             var i, x, y, zone_id, display_name;
             if (response == "Subscribed") {
+                let newZoneList = [];
                 for (x in data.zones) {
                     zone_id = data.zones[x].zone_id;
                     display_name = data.zones[x].display_name;
@@ -137,11 +142,16 @@ var roon = new RoonApi({
                     item.display_name = display_name;
 
                     zoneList.push(item);
+                    newZoneList.push(item);
                     zoneStatus.push(data.zones[x]);
                 }
 
                 removeDuplicateList(zoneList, "zone_id");
                 removeDuplicateStatus(zoneStatus, "zone_id");
+
+                for (const zone of newZoneList) {
+                    onNewZone(zone);
+                }
             } else if (response == "Changed") {
                 for (i in data) {
                     if (i == "zones_changed" || i == "zones_seek_changed") {
@@ -154,6 +164,7 @@ var roon = new RoonApi({
                         }
                         emitToRoonSocket("zoneStatus", zoneStatus);
                     } else if (i == "zones_added") {
+                        let newZoneList = [];
                         for (x in data.zones_added) {
                             zone_id = data.zones_added[x].zone_id;
                             display_name = data.zones_added[x].display_name;
@@ -163,11 +174,16 @@ var roon = new RoonApi({
                             item.display_name = display_name;
 
                             zoneList.push(item);
+                            newZoneList.push(item);
                             zoneStatus.push(data.zones_added[x]);
                         }
 
                         removeDuplicateList(zoneList, "zone_id");
                         removeDuplicateStatus(zoneStatus, "zone_id");
+
+                        for (const zone of newZoneList) {
+                            onNewZone(zone);
+                        }
                     } else if (i == "zones_removed") {
                         // console.log('171 zoneList: ' + JSON.stringify(zoneList, null, 2));
                         for (x in data.zones_removed) {
@@ -218,7 +234,9 @@ function removeDuplicateList(array, property) {
     }
 
     zoneList = new_array;
+    // console.log("225 zoneList: " + JSON.stringify(zoneList, null ,2));
     emitToRoonSocket("zoneList", zoneList);
+    // checkSubscribeQueue(zoneList);
 }
 
 // Remove duplicates from zoneStatus array
@@ -299,6 +317,67 @@ function load_browse(listoffset, callback, onerror) {
     );
 }
 
+var subscribeQueueList = [];
+var lastSubscribeQueueMsgs = {};
+// function checkSubscribeQueue(zoneList) {
+//     for (const zid of subscribeQueueList) {
+//         //if zid is not in zoneList, remove zid from subscribeQueueList
+//         if (!zoneList.find((x) => x.zone_id == zid)) {
+//             console.log("314 checkSubscribeQueue: " + zid + " removed from subscribeQueueList");
+//             subscribeQueueList = subscribeQueueList.filter((x) => x != zid);
+//             delete lastSubscribeQueueMsgs[zid];
+//         }
+//     }
+//     //if zoneList is not in subscribeQueueList, add zoneList to subscribeQueueList  
+//     for (const zone of zoneList) {
+//         if (!subscribeQueueList.find((x) => x == zone.zone_id)) {
+//             console.log("320 checkSubscribeQueue: " + zone.zone_id + " added to subscribeQueueList");
+//             subscribeQueueList.push(zone.zone_id);
+//             transport.subscribe_queue(zone.zone_id, 50, function (response, msg) {
+//                 console.log("subscribe_queue response: " + JSON.stringify(response, null, 2));
+//                 console.log("subscribe_queue msg: " + JSON.stringify(msg, null, 2));
+//                 if (msg) {
+//                     msg.response = response;
+//                     msg.zone_id = zone.zone_id;
+//                     lastSubscribeQueueMsgs[zone.zone_id] = msg;
+//                     emitToRoonSocket("queueStatus", msg);
+//                 }
+//             });
+//         }
+//     }
+//     console.log("331 subscribeQueueList: " + JSON.stringify(subscribeQueueList, null, 2));
+// }
+
+function onNewZone(zone) {
+    console.log("onNewZone: " + JSON.stringify(zone, null, 2));
+    delete lastSubscribeQueueMsgs[zone.zone_id];
+    //add to subscribeQueueList if not in subscribeQueueList
+    if (!subscribeQueueList.find((x) => x == zone.zone_id)) {
+        subscribeQueueList.push(zone.zone_id);
+    }
+    subscribeQueue(zone.zone_id);
+}
+
+function onRemoveZone(zone_id) {
+    console.log("onRemoveZone: " + zone_id);
+    delete lastSubscribeQueueMsgs[zone_id];
+    subscribeQueueList = subscribeQueueList.filter((x) => x != zone_id);
+}
+
+function subscribeQueue(zone_id) {
+    console.log("subscribeQueue: " + zone_id);
+    transport.subscribe_queue(zone_id, 50, function (response, msg) {
+        // console.log("subscribe_queue response: " + JSON.stringify(response, null, 2));
+        // console.log("subscribe_queue msg: " + JSON.stringify(msg, null, 2));
+        if (msg) {
+            msg.response = response;
+            msg.zone_id = zone_id;
+            lastSubscribeQueueMsgs[zone_id] = msg;
+            emitToRoonSocket("queueStatus", msg);
+        }
+    });
+}
+
 var roonSocketList = {};
 var mcIntoshSocketList = {};
 var renderDeviceSocketList = {};
@@ -322,7 +401,7 @@ const manager = new MediaDeviceManager();
 (async () => {
     await manager.init();
     manager.on('renderDeviceInfo', (deviceInfo) => {
-        console.log('renderDeviceInfo: ' + JSON.stringify(deviceInfo, null, 2));
+        // console.log('renderDeviceInfo: ' + JSON.stringify(deviceInfo, null, 2));
         //find device in renderDevices
         var findDevice = renderDevices.find((x) => x.id === deviceInfo.id);
         let changed = false;
@@ -341,7 +420,7 @@ const manager = new MediaDeviceManager();
         }
     });
     manager.on('renderDeviceStatus', (deviceStatus) => {
-        console.log('339 renderDeviceStatus: ' + JSON.stringify(deviceStatus, null, 2));
+        // console.log('339 renderDeviceStatus: ' + JSON.stringify(deviceStatus, null, 2));
         //find device in renderDeviceStatus
         var findDevice = renderDeviceStatusArray.find((x) => x.id === deviceStatus.id);
         let changed = false;
@@ -350,16 +429,16 @@ const manager = new MediaDeviceManager();
             // console.log('345 deviceStatus: ###' + JSON.stringify(deviceStatus) + '###');
             if (JSON.stringify(findDevice) !== JSON.stringify(deviceStatus)) {
                 //remove device from renderDeviceStatusArray
-                console.log('350 findDevice and changed');
+                // console.log('350 findDevice and changed');
                 renderDeviceStatusArray = renderDeviceStatusArray.filter((x) => x.id !== deviceStatus.id);
                 changed = true;
             }
         } else {
-            console.log('353 findDevice not found');
+            // console.log('353 findDevice not found');
             changed = true;
         }
         if (changed) {
-            console.log('356 changed');
+            // console.log('356 changed');
             renderDeviceStatusArray.push(deviceStatus);
             emitToRenderDeviceSocket("renderDeviceStatus", deviceStatus);
         }
@@ -371,7 +450,7 @@ const manager = new MediaDeviceManager();
 io.on("connection", function (socket) {
 
     let subscribes = socket.handshake.query.subscribes;
-    console.log("subscribes: " + subscribes);
+    // console.log("subscribes: " + subscribes);
     //split subscribes by comma
     if (subscribes) {
         let subscribesArray = subscribes.split(',');
@@ -433,6 +512,8 @@ function emitToRenderDeviceSocket(event, data) {
 }
 
 // ---------------------------- ROON --------------
+var subscribeQueueList = [];
+
 function initRoonSocket(socket) {
 
     socket.on("getZone", function () {
@@ -486,10 +567,20 @@ function initRoonSocket(socket) {
         transport.mute(msg.output_id, msg.how);
     });
 
+    socket.on("su", function (msg) {
+        transport.subscribe_queue(msg.zone_id, 20, function (response, msg) {
+            console.log("492 subscribe_queue response: " + JSON.stringify(response, null, 2));
+            console.log("493 subscribe_queue msg: " + JSON.stringify(msg, null, 2));
+        });
+    });
+
     io.to(socket.id).emit("pairStatus", JSON.parse('{"pairEnabled": ' + pairStatus + "}"));
     io.to(socket.id).emit("zoneList", zoneList);
     io.to(socket.id).emit("zoneStatus", zoneStatus);
 
+    for (const zone_id of Object.keys(lastSubscribeQueueMsgs)) {
+        io.to(socket.id).emit("queueStatus", lastSubscribeQueueMsgs[zone_id]);
+    }
 }
 
 // ---------------------------- McIntosh DEVICE --------------

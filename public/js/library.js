@@ -1,6 +1,7 @@
 "use strict";
 //var socket = io();
 var socket = io(undefined, {
+    autoConnect: false,            // 初始化时不自动连接
     reconnection: true,            // 启用自动重连
     reconnectionAttempts: Infinity, // 无限次重连尝试
     reconnectionDelay: 1000,       // 每次重连之间的延迟时间（毫秒）
@@ -8,6 +9,7 @@ var socket = io(undefined, {
     timeout: 10000,                // 连接超时时间（毫秒）
     query: {
         subscribes: "roon",
+        source: 'library',
     },
 });
 
@@ -35,9 +37,16 @@ socket.on('reconnect_failed', () => {
     console.log('[Library] Socket.io Failed to reconnect to the server.');
 });
 
-var settings = [];
+var settings = {
+    urlHashEnabled: false,
+};
 
 $(document).ready(function () {
+    // 监听 hash 变化
+    if (settings.urlHashEnabled) {
+        window.addEventListener('hashchange', handleHashChange);
+    }
+
     showPage();
 });
 
@@ -54,7 +63,12 @@ function showPage() {
     if (settings.displayName !== null) {
         $(".buttonZoneName").html(settings.displayName);
         if (settings.zoneID !== null) {
-            goHome();
+            let hashParams = getUrlHash();
+            if (hashParams.action === 'goList' && hashParams.item_key) {
+                goList(hashParams.item_key, hashParams.listoffset);
+            } else {
+                goHome();
+            }
         }
     }
 
@@ -84,6 +98,8 @@ function enableSockets() {
             $("#button-" + settings.zoneID).addClass("buttonSettingActive");
         }
     });
+
+    socket.connect();
 }
 
 function selectZone(zone_id, display_name) {
@@ -104,15 +120,19 @@ function goBack() {
     data.options = { pop_levels: 1 };
 
     console.log("goBack: ", JSON.stringify(data, null, 2));
-    
+
     $.ajax({
         type: "POST",
         data: JSON.stringify(data),
         contentType: "application/json",
         url: "/roonapi/goRefreshBrowse",
         success: function (payload) {
+            removeLastUrlHash(); // 设置为上一个 URL hash
             showData(payload, settings.zoneID, 1);
-        }
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            console.log('128 goBack error: ', textStatus, errorThrown);
+        },
     });
 }
 
@@ -120,6 +140,9 @@ function goHome() {
     var data = {};
     data.zone_id = settings.zoneID;
     data.options = { pop_all: true };
+
+    urlHashHistory = []; // 清空 URL hash 历史
+    removeUrlHash();
 
     console.log("goHome: ", JSON.stringify(data, null, 2));
 
@@ -130,6 +153,9 @@ function goHome() {
         url: "/roonapi/goRefreshBrowse",
         success: function (payload) {
             showData(payload, settings.zoneID);
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            console.log('151 goHome error: ', textStatus, errorThrown);
         }
     });
 }
@@ -138,6 +164,8 @@ function goRefresh() {
     var data = {};
     data.zone_id = settings.zoneID;
     data.options = { refresh_list: true };
+
+    // removeUrlHash();
 
     console.log("goRefresh: ", JSON.stringify(data, null, 2));
 
@@ -148,6 +176,9 @@ function goRefresh() {
         url: "/roonapi/goRefreshBrowse",
         success: function (payload) {
             showData(payload, settings.zoneID);
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            console.log('169 goRefresh error: ', textStatus, errorThrown);
         }
     });
 }
@@ -165,6 +196,9 @@ function goList(item_key, listoffset) {
 
     console.log("goList: ", JSON.stringify(data, null, 2));
 
+    // 设置 URL 锚点
+    setUrlHash('goList', { item_key: item_key, listoffset: data.listoffset });
+
     $.ajax({
         type: "POST",
         data: JSON.stringify(data),
@@ -172,6 +206,9 @@ function goList(item_key, listoffset) {
         url: "/roonapi/goRefreshBrowse",
         success: function (payload) {
             showData(payload, settings.zoneID);
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            console.log('198 goList error: ', textStatus, errorThrown);
         }
     });
 }
@@ -193,7 +230,10 @@ function goPage(listoffset) {
         url: "/roonapi/goLoadBrowse",
         success: function (payload) {
             showData(payload, settings.zoneID);
-        }
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            console.log('222 goPage error: ', textStatus, errorThrown);
+        },
     });
 }
 
@@ -215,16 +255,24 @@ function goSearch() {
         url: "/roonapi/goRefreshBrowse",
         success: function (payload) {
             showData(payload, settings.zoneID);
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            console.log('245 goSearch error: ', textStatus, errorThrown);
         }
     });
 }
 
 function showData(payload, zone_id) {
 
+    if (settings.urlHashEnabled) {
+        console.log('244 urlHashHistory', urlHashHistory);
+    }
+
     if (payload.error) {
         console.log('[showData()] Server Response Error: ' + payload.error);
         if (payload.error != 'ZoneNotFound') {
             setTimeout(function () {
+                removeUrlHash();
                 window.location.reload();
             }, 2000)
         }
@@ -391,7 +439,7 @@ function showData(payload, zone_id) {
             $("#navLine2").show();
             $("#content").css("bottom", "48px");
         }
-        contentScrollToTop();
+        // contentScrollToTop();
     }
 }
 
@@ -590,11 +638,11 @@ var getSVGOrImageForItem = function (item, list) {
     return getWrapSVG('album');
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     var scrollToTopBtn = document.getElementById("scrollToTopBtn");
     var content = document.getElementById("content");
 
-    content.onscroll = function() {
+    content.onscroll = function () {
         if (content.scrollTop > 100) {
             scrollToTopBtn.style.display = "block";
         } else {
@@ -602,7 +650,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    scrollToTopBtn.onclick = function() {
+    scrollToTopBtn.onclick = function () {
         contentScrollToTop();
     };
 });
@@ -614,3 +662,81 @@ function contentScrollToTop() {
         behavior: "smooth"
     });
 }
+
+//=== url hash ===
+function getUrlHash() {
+    let hash = window.location.hash.substring(1); // 移除开头的 #
+    let result = {};
+    let pairs = hash.split('&');
+    pairs.forEach(function (pair) {
+        pair = pair.split('=');
+        result[pair[0]] = decodeURIComponent(pair[1] || '');
+    });
+    return result;
+}
+
+function removeUrlHash() {
+    window.location.hash = '';
+}
+
+// 添加一个数组来存储 URL hash 历史
+let urlHashHistory = [];
+
+// 修改 setUrlHash 函数来记录历史
+function setUrlHash(action, params) {
+    if (!settings.urlHashEnabled) {
+        return;
+    }
+    let hash = `#action=${action}`;
+    for (let key in params) {
+        if (params.hasOwnProperty(key)) {
+            hash += `&${key}=${encodeURIComponent(params[key])}`;
+        }
+    }
+    // 将新的 hash 添加到历史中
+    urlHashHistory.push(hash);
+    window.location.hash = hash;
+}
+
+// 添加一个函数来移除最后一个 URL hash
+function removeLastUrlHash() {
+    if (urlHashHistory.length > 1) {
+        urlHashHistory.pop(); // 移除当前的 hash
+        let previousHash = urlHashHistory[urlHashHistory.length - 1];
+        window.location.hash = previousHash;
+    } else {
+        urlHashHistory = [];
+        removeUrlHash();
+    }
+}
+
+// 添加一个函数来处理 hash 变化
+function handleHashChange() {
+    let currentHash = window.location.hash;
+    let his = urlHashHistory;
+    if (his.length > 0) {
+        let last = his[his.length - 1];
+        if (currentHash === last) {
+            return;
+        }
+    }
+    if (his.length > 1) {
+        let last = his[his.length - 2];
+        if (currentHash === last) {
+            urlHashHistory.pop();
+            urlHashHistory.pop();
+        }
+    }
+    console.log('currentHash: ', currentHash);
+    let hashParams = getUrlHash();
+    if (hashParams.action === 'goList' && hashParams.item_key) {
+        goList(hashParams.item_key, hashParams.listoffset);
+    } else if (!currentHash || currentHash.length < 1) {
+        if (urlHashHistory.length > 0) {
+            goHome();
+        }
+    } else {
+        console.log('unknown hash: ', currentHash);
+    }
+}
+
