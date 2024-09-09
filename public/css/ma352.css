@@ -331,7 +331,7 @@ input[type=range]:focus::-ms-fill-upper {
 
 /* == */
 #isConnecting {
-    width: 70vw;
+    width: 75vw;
     /* 宽度为视口宽度的 70% */
     padding: 10px;
     /* 添加一些内边距，防止内容溢出 */
@@ -360,8 +360,8 @@ input[type=range]:focus::-ms-fill-upper {
 .deviceStatusItem {
     display: flex;
     align-items: center;
-    padding-bottom: 4vh;
-    padding-top: 4vh;
+    padding-bottom: 2vh;
+    padding-top: 2vh;
 }
 
 .deviceStatusItemLabel {
@@ -379,7 +379,7 @@ input[type=range]:focus::-ms-fill-upper {
 .deviceStatusItemValues {
     height: 10%;
     width: 100%;
-    max-height: 48px;
+    max-height: 3em;
     display: flex;
     justify-content: space-around;
     align-items: center;
@@ -458,7 +458,8 @@ input[type=range]:focus::-ms-fill-upper {
 }
 
 /* 竖屏布局 */
-@media screen and (max-width: 767px) {
+/* @media screen and (max-width: 767px) { */
+@media (orientation: portrait) {    
     #isConnecting {
         width: 100%;
     }

@@ -222,7 +222,8 @@
 }
 
 /* 竖屏布局 */
-@media screen and (max-width: 767px) {
+/* @media screen and (max-width: 767px) { */
+@media (orientation: portrait) {    
     #listTitle {
         font-size: 160%;
         font-weight: bold;

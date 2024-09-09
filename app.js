@@ -1,4 +1,7 @@
 "use strict";
+
+const logger = require('./lib/logger');
+
 // Setup general variables
 var defaultListenPort = 8080;
 
@@ -93,7 +96,7 @@ var server = http.createServer(app);
 var io = require("socket.io").listen(server);
 
 server.listen(listenPort, function () {
-    console.log("Listening on port " + listenPort);
+    logger.info("Listening on port " + listenPort);
 });
 
 // Setup Roon
@@ -269,7 +272,7 @@ function refresh_browse(zone_id, options, callback, onerror) {
 
     core.services.RoonApiBrowse.browse(options, function (error, payload) {
         if (error) {
-            console.log("249:", error, payload);
+            logger.error("browse error: ", error, ", payload: ", payload);
             if (onerror) onerror(error);
             return;
         }
@@ -291,7 +294,7 @@ function refresh_browse(zone_id, options, callback, onerror) {
                 },
                 function (error, payload) {
                     if (error) {
-                        console.log("270 load error: " + JSON.stringify(error, null, 2));
+                        logger.error("load error: ", error, ", payload: ", payload);
                     }
                     // console.log("load payload: " + JSON.stringify(payload, null, 2));
                     callback(payload);
@@ -310,7 +313,7 @@ function load_browse(listoffset, callback, onerror) {
         },
         function (error, payload) {
             if (error) {
-                console.log("289 load error: " + JSON.stringify(error, null, 2));
+                logger.error("load error: ", error, ", payload: ", payload);
             }
             callback(payload);
         }
@@ -349,7 +352,7 @@ var lastSubscribeQueueMsgs = {};
 // }
 
 function onNewZone(zone) {
-    console.log("onNewZone: " + JSON.stringify(zone, null, 2));
+    logger.info("onNewZone: ", zone);
     delete lastSubscribeQueueMsgs[zone.zone_id];
     //add to subscribeQueueList if not in subscribeQueueList
     if (!subscribeQueueList.find((x) => x == zone.zone_id)) {
@@ -359,13 +362,13 @@ function onNewZone(zone) {
 }
 
 function onRemoveZone(zone_id) {
-    console.log("onRemoveZone: " + zone_id);
+    logger.info("onRemoveZone: ", zone_id);
     delete lastSubscribeQueueMsgs[zone_id];
     subscribeQueueList = subscribeQueueList.filter((x) => x != zone_id);
 }
 
 function subscribeQueue(zone_id) {
-    console.log("subscribeQueue: " + zone_id);
+    logger.info("subscribeQueue: ", zone_id);
     transport.subscribe_queue(zone_id, 50, function (response, msg) {
         // console.log("subscribe_queue response: " + JSON.stringify(response, null, 2));
         // console.log("subscribe_queue msg: " + JSON.stringify(msg, null, 2));
@@ -390,7 +393,7 @@ mcIntoshDevice.start({}, statusChangeCb);
 function statusChangeCb(status, key, value) {
     // console.log("device statusChangeCb status=", status, ", ", key, ":", value);
     if (key == "error") {
-        console.log("Device error: " + value);
+        logger.error("Device error: ", value);
     }
     emitToMcIntoshSocket("deviceStatusChanged", { status: status, key: key, value: value });
 }
@@ -563,15 +566,8 @@ function initRoonSocket(socket) {
     });
 
     socket.on("changeMute", function (msg) {
-        console.log("Mute: " + JSON.stringify(msg));
+        logger.info("Mute: ", msg);
         transport.mute(msg.output_id, msg.how);
-    });
-
-    socket.on("su", function (msg) {
-        transport.subscribe_queue(msg.zone_id, 20, function (response, msg) {
-            console.log("492 subscribe_queue response: " + JSON.stringify(response, null, 2));
-            console.log("493 subscribe_queue msg: " + JSON.stringify(msg, null, 2));
-        });
     });
 
     io.to(socket.id).emit("pairStatus", JSON.parse('{"pairEnabled": ' + pairStatus + "}"));
@@ -587,27 +583,27 @@ function initRoonSocket(socket) {
 function initMcIntoshSocket(socket) {
 
     socket.on("webDeviceChangeVolumeUp", function (msg) {
-        console.log("webDeviceChangeVolumeUp: " + JSON.stringify(msg));
+        logger.info("webDeviceChangeVolumeUp: ", msg);
         mcIntoshDevice.volumeUp();
     });
 
     socket.on("webDeviceChangeVolumeDown", function (msg) {
-        console.log("webDeviceChangeVolumeDown: " + JSON.stringify(msg));
+        logger.info("webDeviceChangeVolumeDown: ", msg);
         mcIntoshDevice.volumeDown();
     });
 
     socket.on("webDeviceChangeVolume", function (msg) {
-        console.log("webDeviceChangeVolume: " + JSON.stringify(msg));
+        logger.info("webDeviceChangeVolume: ", msg);
         mcIntoshDevice.setVolume(msg.volume);
     });
 
     socket.on("webDeviceChangeInput", function (msg) {
-        console.log("webDeviceChangeInput: " + JSON.stringify(msg));
+        logger.info("webDeviceChangeInput: ", msg);
         mcIntoshDevice.setInput(msg.input);
     });
 
     socket.on("webDeviceChangeMute", function (msg) {
-        console.log("webDeviceChangeMute: " + JSON.stringify(msg));
+        logger.info("webDeviceChangeMute: ", msg);
         if (msg.how == "unmute") {
             mcIntoshDevice.mute(0);
         } else {
@@ -616,17 +612,17 @@ function initMcIntoshSocket(socket) {
     });
 
     socket.on("webDeviceStatusChange", function (msg) {
-        console.log("webDeviceStatusChange: " + JSON.stringify(msg));
+        logger.info("webDeviceStatusChange: ", msg);
         mcIntoshDevice.setStatus(msg.key, msg.value);
     });
 
     socket.on("webDevicePowerOn", function (msg) {
-        console.log("webDevicePowerOn: " + JSON.stringify(msg));
+        logger.info("webDevicePowerOn: ", msg);
         mcIntoshDevice.powerOn();
     });
 
     socket.on("webDevicePowerOff", function (msg) {
-        console.log("webDevicePowerOff: " + JSON.stringify(msg));
+        logger.info("webDevicePowerOff: ", msg);
         mcIntoshDevice.powerOff();
     });
 
@@ -641,7 +637,7 @@ function initMcIntoshSocket(socket) {
 function initRenderDeviceSocket(socket) {
 
     socket.on("webRenderDeviceChangeVolumeUp", async function (msg) {
-        console.log("webRenderDeviceChangeVolumeUp: " + JSON.stringify(msg));
+        logger.info("webRenderDeviceChangeVolumeUp: ", msg);
         let deviceId = msg.deviceId;
         let device = manager.getMediaDeviceById(deviceId);
         if (device) {
@@ -650,7 +646,7 @@ function initRenderDeviceSocket(socket) {
     });
 
     socket.on("webRenderDeviceChangeVolumeDown", async function (msg) {
-        console.log("webRenderDeviceChangeVolumeDown: " + JSON.stringify(msg));
+        logger.info("webRenderDeviceChangeVolumeDown: ", msg);
         let deviceId = msg.deviceId;
         let device = manager.getMediaDeviceById(deviceId);
         if (device) {
@@ -659,7 +655,7 @@ function initRenderDeviceSocket(socket) {
     });
 
     socket.on("webRenderDeviceChangeVolume", async function (msg) {
-        console.log("webRenderDeviceChangeVolume: " + JSON.stringify(msg));
+        logger.info("webRenderDeviceChangeVolume: ", msg);
         let deviceId = msg.deviceId;
         let volume = msg.volume;
         let device = manager.getMediaDeviceById(deviceId);
@@ -669,7 +665,7 @@ function initRenderDeviceSocket(socket) {
     });
 
     socket.on("webRenderDeviceChangeInput", async function (msg) {
-        console.log("webRenderDeviceChangeInput: " + JSON.stringify(msg));
+        logger.info("webRenderDeviceChangeInput: ", msg);
         let deviceId = msg.deviceId;
         let inputIndex = msg.input;
         let device = manager.getMediaDeviceById(deviceId);
@@ -679,7 +675,7 @@ function initRenderDeviceSocket(socket) {
     });
 
     socket.on("webRenderDeviceChangeMute", async function (msg) {
-        console.log("webRenderDeviceChangeMute: " + JSON.stringify(msg));
+        logger.info("webRenderDeviceChangeMute: ", msg);
         let deviceId = msg.deviceId;
         let device = manager.getMediaDeviceById(deviceId);
         if (device) {
@@ -692,7 +688,7 @@ function initRenderDeviceSocket(socket) {
     });
 
     socket.on("webRenderDeviceStatusChange", async function (msg) {
-        console.log("webRenderDeviceStatusChange: " + JSON.stringify(msg));
+        logger.info("webRenderDeviceStatusChange: ", msg);
         let deviceId = msg.deviceId;
         let device = manager.getMediaDeviceById(deviceId);
         if (device) {
@@ -707,11 +703,11 @@ function initRenderDeviceSocket(socket) {
     });
 
     socket.on("webRenderDevicePowerOn", async function (msg) {
-        console.log("webRenderDevicePowerOn: " + JSON.stringify(msg));
+        logger.info("webRenderDevicePowerOn: ", msg);
     });
 
     socket.on("webRenderDevicePowerOff", async function (msg) {
-        console.log("webRenderDevicePowerOff: " + JSON.stringify(msg));
+        logger.info("webRenderDevicePowerOff: ", msg);
     });
 
     io.to(socket.id).emit("renderDeviceInfoList", renderDevices);
@@ -787,7 +783,7 @@ app.get("/roonapi/image4k/:image_key.jpg", function (req, res) {
 app.get("/roonapi/getImage", function (req, res) {
     let fileName = req.query.image_key + '.jpg';
     let filePath = __dirname + '/public/images/' + fileName;
-    console.log("getImage: " + filePath);
+    logger.info("getImage: " + filePath);
     // Check if file exists
     if (fs.existsSync(filePath)) {
         console.log("File exists: " + filePath);
@@ -816,7 +812,7 @@ app.get("/roonapi/getImage", function (req, res) {
 app.get("/roonapi/getImage4k", function (req, res) {
     let fileName = req.query.image_key + '.jpg';
     let filePath = __dirname + '/public/images4k/' + fileName;
-    console.log("getImage4k: " + filePath);
+    logger.info("getImage4k: " + filePath);
     // Check if file exists
     if (fs.existsSync(filePath)) {
         console.log("File exists: " + filePath);

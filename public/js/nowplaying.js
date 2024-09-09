@@ -392,7 +392,9 @@ function updatePlaylist(itemList) {
         let subTitle = artist + ((artist && album) ? '&nbsp;-&nbsp;' : '') + album;
         //create div with class roonPlaylistItem
         let itemDiv = $(`<div class="rp_Item">
-            <img src="/roonapi/image/${item.image_key}.jpg" class="rp_ItemImage">
+            <div class="rp_ItemImageDiv">
+                <img src="/roonapi/image/${item.image_key}.jpg" class="rp_ItemImage">
+            </div>
             <div class="rp_ItemInfo">
                 <div class="rp_ItemTitle">${title}</div>
                 <div class="rp_ItemSubTitle">${lenStr}&nbsp;&nbsp;${subTitle}</div>

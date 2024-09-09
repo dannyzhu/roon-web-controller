@@ -357,7 +357,8 @@ input[type=range]:focus::-ms-fill-upper {
     background: #3daee9;
 }
 
-@media screen and (max-width: 767px) {
+/* @media screen and (max-width: 767px) { */
+@media (orientation: portrait) {    
     .overlayListRow button {
         margin: 1em 0;
         font-size: 100%;
@@ -374,16 +375,15 @@ input[type=range]:focus::-ms-fill-upper {
 .roonPlaylist {
     max-height: 100vh;
     max-width: 100%;
-    padding: 1em 0 1em 0.5em;
-    /* overflow-y: auto; */
+    padding-left: 0.5em;
     overflow-y: scroll;
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none;  /* IE and Edge */
+    box-sizing: border-box; /* 确保padding不会增加元素的总尺寸 */
 
     /* 右侧渐变透明 */
     -webkit-mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 80%, rgba(0, 0, 0, 0) 100%);
     mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 80%, rgba(0, 0, 0, 0) 100%);
-
 }
 
 .roonPlaylist::-webkit-scrollbar {
@@ -393,7 +393,7 @@ input[type=range]:focus::-ms-fill-upper {
 .rp_Item {
     display: flex;
     width: 100%;
-    height: 4em;
+    height: 3.5em;
     margin-bottom: 0.5em;
     background-color: rgba(0, 0, 0, 0.2);
     box-shadow: 0 2px 3px rgba(0, 0, 0, 0.5);
@@ -408,7 +408,7 @@ input[type=range]:focus::-ms-fill-upper {
     }
 
     .rp_Item {
-        height: 4em;
+        height: 3.5em;
     }
 
     .rp_ItemTitle,
@@ -434,11 +434,19 @@ input[type=range]:focus::-ms-fill-upper {
     }
 }
 
+.rp_ItemImageDiv {
+    height: 3.5em;
+    width: 3.5em;
+    padding: 0.2em;
+    box-sizing: border-box; /* 确保padding不会增加元素的总尺寸 */
+}
+
 .rp_ItemImage {
-    padding: 0.3em;
-    height: auto;
-    width: auto;
-    border-radius: 0.5em;
+    border-radius: 0.4em; /* 稍微减小圆角以适应新的尺寸 */
+    height: 100%;
+    width: 100%;
+    object-fit: cover; /* 确保图片填充整个区域并保持比例 */
+    object-position: center; /* 确保图片居中显示 */
 }
 
 .rp_ItemInfo {
@@ -451,14 +459,14 @@ input[type=range]:focus::-ms-fill-upper {
 }
 
 .rp_ItemTitle {
-    font-size: 130%;
+    font-size: 110%;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
 .rp_ItemSubTitle {
-    font-size: 90%;
+    font-size: 80%;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

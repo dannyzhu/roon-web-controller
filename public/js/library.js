@@ -18,6 +18,13 @@ socket.on('connect', () => {
     // socket.emit("subscribe", {
     //     type: "roon",
     // });
+    //check div #items 是否有内容，如果没有， 调用 goHome()
+    if ($("#items").html() === "") {
+        console.log('#items is empty, goHome');
+        goHome();
+    } else {
+        console.log('#items is not empty, do nothing');
+    }
 });
 
 socket.on('disconnect', (reason) => {
@@ -77,6 +84,7 @@ function showPage() {
 
 function enableSockets() {
     socket.on("zoneList", function (payload) {
+        console.log('[Library] zoneList: ', payload);
         $(".zoneList").html("");
 
         if (payload !== undefined) {
@@ -131,7 +139,7 @@ function goBack() {
             showData(payload, settings.zoneID, 1);
         },
         error: function (jqXHR, textStatus, errorThrown) {
-            console.log('128 goBack error: ', textStatus, errorThrown);
+            console.log('128 goBack error textStatus: ', textStatus, ', errorThrown: ', errorThrown);
         },
     });
 }
@@ -155,7 +163,7 @@ function goHome() {
             showData(payload, settings.zoneID);
         },
         error: function (jqXHR, textStatus, errorThrown) {
-            console.log('151 goHome error: ', textStatus, errorThrown);
+            console.log('151 goHome error textStatus: ', textStatus, ', errorThrown: ', errorThrown);
         }
     });
 }
@@ -178,7 +186,7 @@ function goRefresh() {
             showData(payload, settings.zoneID);
         },
         error: function (jqXHR, textStatus, errorThrown) {
-            console.log('169 goRefresh error: ', textStatus, errorThrown);
+            console.log('169 goRefresh error textStatus: ', textStatus, ', errorThrown: ', errorThrown);
         }
     });
 }
@@ -208,7 +216,7 @@ function goList(item_key, listoffset) {
             showData(payload, settings.zoneID);
         },
         error: function (jqXHR, textStatus, errorThrown) {
-            console.log('198 goList error: ', textStatus, errorThrown);
+            console.log('198 goList error textStatus: ', textStatus, ', errorThrown: ', errorThrown);
         }
     });
 }
@@ -232,7 +240,7 @@ function goPage(listoffset) {
             showData(payload, settings.zoneID);
         },
         error: function (jqXHR, textStatus, errorThrown) {
-            console.log('222 goPage error: ', textStatus, errorThrown);
+            console.log('222 goPage error textStatus: ', textStatus, ', errorThrown: ', errorThrown);
         },
     });
 }
@@ -257,7 +265,7 @@ function goSearch() {
             showData(payload, settings.zoneID);
         },
         error: function (jqXHR, textStatus, errorThrown) {
-            console.log('245 goSearch error: ', textStatus, errorThrown);
+            console.log('245 goSearch error textStatus: ', textStatus, ', errorThrown: ', errorThrown);
         }
     });
 }
